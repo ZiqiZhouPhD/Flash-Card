@@ -8,29 +8,22 @@ We have to add "@Inject" before the constructors of the classes needing the inte
 package com.ziqiphyzhou.flashcard.dependency_injection
 
 import android.content.Context
-import android.util.Log
 import androidx.room.Room
-import androidx.room.RoomDatabase
-import androidx.sqlite.db.SupportSQLiteDatabase
 import com.ziqiphyzhou.flashcard.card_database.data.repository.CardRepository
-import com.ziqiphyzhou.flashcard.card_database.data.repository.CardDatabaseRepository
+import com.ziqiphyzhou.flashcard.card_database.data.repository.database.CardRepositoryDatabase
 import com.ziqiphyzhou.flashcard.card_database.data.repository.database.CardDao
 import com.ziqiphyzhou.flashcard.card_database.data.repository.database.CardDatabase
-import com.ziqiphyzhou.flashcard.card_database.data.repository.database.CardEntity
+import com.ziqiphyzhou.flashcard.handle_card.business.CardHandler
+import com.ziqiphyzhou.flashcard.handle_card.business.CardHandlerImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class) // for singleton dependencies
 class AppModule {
-
-    //lateinit var database: CardDatabase
 
     @Provides
     fun provideCardDataBase(
@@ -39,7 +32,7 @@ class AppModule {
         context,
         CardDatabase::class.java,
         "card-database" // this name can be anything
-    ).createFromAsset("sample-card-db.db").build()
+    ).createFromAsset("sample.db").build()
 
     @Provides
     fun provideCardDao(
@@ -47,13 +40,18 @@ class AppModule {
     ): CardDao = cardDatabase.getCardDao()
 
     @Provides
-    fun provideCardDatabaseRepository(
+    fun provideCardRepositoryDatabase(
         cardDao: CardDao
-    ): CardDatabaseRepository = CardDatabaseRepository(cardDao)
+    ): CardRepositoryDatabase = CardRepositoryDatabase(cardDao)
 
     @Provides
     fun provideCardRepository(
-        cardDatabaseRepository: CardDatabaseRepository
-    ): CardRepository = cardDatabaseRepository
+        cardRepositoryDatabase: CardRepositoryDatabase
+    ): CardRepository = cardRepositoryDatabase
+
+    @Provides
+    fun provideCardHandler(
+        cardHandlerImpl: CardHandlerImpl
+    ): CardHandler = cardHandlerImpl
 
 }

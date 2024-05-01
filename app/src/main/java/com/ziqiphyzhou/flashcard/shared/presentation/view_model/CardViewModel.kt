@@ -9,6 +9,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ziqiphyzhou.flashcard.card_database.data.repository.CardRepository
+import com.ziqiphyzhou.flashcard.handle_card.business.CardHandler
 import com.ziqiphyzhou.flashcard.shared.presentation.view_state.CardViewContent
 import com.ziqiphyzhou.flashcard.shared.presentation.view_state.CardViewState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,7 +20,7 @@ import javax.inject.Inject
 // the activity declare "private val viewModel: CardViewModel by viewModels()" to use it
 // the initializer needs to be set by a dependency injection library (hilt/dagger)
 @HiltViewModel // needed before view models needing injection
-class CardViewModel @Inject constructor(private val repository: CardRepository) : ViewModel() {
+class CardViewModel @Inject constructor(private val cardHandler: CardHandler) : ViewModel() {
 
     // the following trick of defining two variables allows us to mutate live data here in the view model
     // but not access the live data outside
@@ -32,7 +33,7 @@ class CardViewModel @Inject constructor(private val repository: CardRepository) 
     fun loadCard() {
         viewModelScope.launch {
             _viewState.postValue(CardViewState.Freeze)
-            val card = repository.getTopCard()
+            val card = cardHandler.getTop()
             _viewState.postValue(CardViewState.ShowAllContent(CardViewContent(card.title, card.body)))
         }
     }
