@@ -1,7 +1,7 @@
 package com.ziqiphyzhou.flashcard.handle_card.business
 
 data class Card(
-    val id: Int,
+    val id: Int = 0,
     var title: String,
     var body: String,
     var level: Int = 0,

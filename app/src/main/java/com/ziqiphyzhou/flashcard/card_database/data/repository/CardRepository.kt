@@ -11,5 +11,7 @@ interface CardRepository {
 
     suspend fun getTop(): Card
     suspend fun insertTopAfterById(id: Int)
+    suspend fun isStructureIntact(): Boolean
+    suspend fun add(title: String, body: String)
 
 }

@@ -27,4 +27,55 @@ class CardRepositoryDatabase @Inject constructor(private val cardDao: CardDao) :
 
     }
 
+    override suspend fun isStructureIntact(): Boolean {
+        var isIntact = false
+        withContext(Dispatchers.IO) {
+            isIntact = cardDao.getById(0) != null && isStructureIntactForList(cardDao.getAll())
+        }
+        return isIntact
+    }
+
+    override suspend fun add(title: String, body: String) {
+        withContext(Dispatchers.IO) {
+            val zeroCard = cardDao.getById(0)
+            val lastCard = cardDao.getById(zeroCard.previous)
+            zeroCard.previous = cardDao.addCard(
+                CardEntity(title = title, body = body, previous = lastCard.id)
+            ).toInt()
+            cardDao.updateCard(zeroCard)
+        }
+    }
+
+//    private fun getLast(): CardEntity {
+//        val zeroCard = cardDao.getById(0)
+//        return cardDao.getById(zeroCard.previous)
+//    }
+
+    private fun isStructureIntactForList(allCards: List<CardEntity>): Boolean {
+        val lastCard = allCards.last()
+        val linkFromSet = mutableSetOf<Int>() // has link pointing from it
+        val linkToSet = mutableSetOf<Int>() // has link pointing to it
+        for (cardEntity in allCards) {
+            if (cardEntity.previous in linkToSet) {
+                return false
+            } else {
+                val isConnectedFromAny = cardEntity.id in linkToSet
+                val isConnectedToAny = cardEntity.previous in linkFromSet
+                if (isConnectedFromAny && isConnectedToAny) {
+                    return cardEntity == lastCard
+                } else if (isConnectedFromAny) {
+                    linkToSet.remove(cardEntity.id)
+                    linkToSet.add(cardEntity.previous)
+                } else if (isConnectedToAny) {
+                    linkFromSet.remove(cardEntity.previous)
+                    linkFromSet.add(cardEntity.id)
+                } else {
+                    linkFromSet.add(cardEntity.id)
+                    linkToSet.add(cardEntity.previous)
+                }
+            }
+        }
+        return false
+    }
+
 }

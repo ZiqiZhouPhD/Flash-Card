@@ -32,4 +32,10 @@ class CardHandlerImpl @Inject constructor(private val repository: CardRepository
         bookmarkList.addAll(insertPosList)
     }
 
+    override suspend fun add(title: String, body: String) {
+        withContext(Dispatchers.IO) {
+            repository.add(title, body)
+        }
+    }
+
 }
