@@ -3,11 +3,11 @@ Activities are part of the View Layer.
 Activities / fragments receive live data posted by view models.
 */
 
-package com.ziqiphyzhou.flashcard.shared.presentation.view
+package com.ziqiphyzhou.flashcard.card.presentation
 
+import android.content.Intent
 import android.graphics.BlurMaskFilter
 import android.os.Bundle
-import android.util.Log
 import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
@@ -18,23 +18,15 @@ import androidx.appcompat.widget.PopupMenu
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
-import androidx.lifecycle.Observer
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.ziqiphyzhou.flashcard.R
-import com.ziqiphyzhou.flashcard.card_database.data.repository.database.CardEntity
-import com.ziqiphyzhou.flashcard.card_database.data.repository.database.CardDao
-import com.ziqiphyzhou.flashcard.card_database.data.repository.database.CardDatabase
+import com.ziqiphyzhou.flashcard.card_delete.presentation.DeleteActivity
 import com.ziqiphyzhou.flashcard.databinding.ActivityMainBinding
 import com.ziqiphyzhou.flashcard.databinding.DialogAddCardBinding
-import com.ziqiphyzhou.flashcard.shared.presentation.view_model.CardViewModel
-import com.ziqiphyzhou.flashcard.shared.presentation.view_state.CardViewContent
-import com.ziqiphyzhou.flashcard.shared.presentation.view_state.CardViewState
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import kotlin.concurrent.thread
 
 @AndroidEntryPoint // added before any activity/fragment for dependency injection
 class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
@@ -47,7 +39,7 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
         enableEdgeToEdge()
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
@@ -58,15 +50,16 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
         }
         viewModel.loadCard()
 
-        viewModel.addCardSuccessMessage.observe(this, Observer {
-            it.getContentIfNotHandled()?.let {
+        viewModel.addCardSuccessMessage.observe(this) { event ->
+            event.getContentIfNotHandled()?.let {
                 Toast.makeText(this, it, Toast.LENGTH_LONG).show()
             }
-        })
+        }
 
         binding.fab.setOnClickListener {
             showMenu(it)
         }
+
     }
 
     private fun updateUi(viewState: CardViewState) {
@@ -119,6 +112,8 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
         return when (item.itemId) {
             R.id.menu_item_add -> showAddCardDialog()
             R.id.menu_item_delete -> {
+                val intent = Intent(this, DeleteActivity::class.java)
+                startActivity(intent)
                 true
             }
 
@@ -139,16 +134,19 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
     }
 
     private fun showAddCardDialog(): Boolean {
+
         val dialogBinding = DialogAddCardBinding.inflate(layoutInflater)
         val dialog = BottomSheetDialog(this)
         dialog.setContentView(dialogBinding.root)
 
         dialogBinding.buttonSave.setOnClickListener {
+            CoroutineScope(Dispatchers.Main).launch {
+                viewModel.addCard(
+                    title = dialogBinding.editTextCardTitle.text.toString(),
+                    body = dialogBinding.editTextCardBody.text.toString()
+                )
+            }
             dialog.dismiss()
-            viewModel.addCard(
-                title = dialogBinding.editTextCardTitle.text.toString(),
-                body = dialogBinding.editTextCardBody.text.toString()
-            )
         }
 
         dialog.show()

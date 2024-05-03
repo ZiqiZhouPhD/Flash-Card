@@ -5,7 +5,7 @@ The repo belongs to the repo layer.
 package com.ziqiphyzhou.flashcard.card_database.data.repository.database
 
 import com.ziqiphyzhou.flashcard.card_database.data.repository.CardRepository
-import com.ziqiphyzhou.flashcard.handle_card.business.Card
+import com.ziqiphyzhou.flashcard.card_handle.business.Card
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -28,22 +28,44 @@ class CardRepositoryDatabase @Inject constructor(private val cardDao: CardDao) :
     }
 
     override suspend fun isStructureIntact(): Boolean {
-        var isIntact = false
-        withContext(Dispatchers.IO) {
-            isIntact = cardDao.getById(0) != null && isStructureIntactForList(cardDao.getAll())
+        return withContext(Dispatchers.IO) {
+            try { cardDao.getById(0) } catch (e: Exception) { return@withContext false }
+            isStructureIntactForList(cardDao.getAll())
         }
-        return isIntact
     }
 
-    override suspend fun add(title: String, body: String) {
-        withContext(Dispatchers.IO) {
+    override suspend fun add(title: String, body: String): Boolean {
+        return withContext(Dispatchers.IO) {
             val zeroCard = cardDao.getById(0)
             val lastCard = cardDao.getById(zeroCard.previous)
             zeroCard.previous = cardDao.addCard(
                 CardEntity(title = title, body = body, previous = lastCard.id)
             ).toInt()
             cardDao.updateCard(zeroCard)
+            true
         }
+    }
+
+    override suspend fun getAllBeginWith(substring: String): List<Card> {
+        return withContext(Dispatchers.IO) {
+            if (substring.length <= 1) cardDao.getAllByTitle(substring).map {
+                Card(it.id, it.title, it.body, it.level, it.previous)
+            } else cardDao.getAllByTitle("$substring%").map {
+                Card(it.id, it.title, it.body, it.level, it.previous)
+            }
+        }
+    }
+
+    override suspend fun delete(id: Int): Boolean {
+        if (id == 0) return false
+        withContext(Dispatchers.IO) {
+            val deleteCard = cardDao.getById(id)
+            cardDao.deleteCard(deleteCard)
+            val nextCard = cardDao.getNextById(id)
+            nextCard.previous = deleteCard.previous
+            cardDao.updateCard(nextCard)
+        }
+        return true
     }
 
 //    private fun getLast(): CardEntity {

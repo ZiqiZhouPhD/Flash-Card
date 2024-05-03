@@ -93,8 +93,13 @@ dependencies {
     // Annotation processor
     kapt("androidx.lifecycle:lifecycle-compiler:$lifecycle_version")
 
-    implementation("com.google.dagger:hilt-android:2.46")
-    kapt("com.google.dagger:hilt-android-compiler:2.46")
+    implementation("com.google.dagger:hilt-android:2.50")
+    kapt("com.google.dagger:hilt-android-compiler:2.50")
+
+    val fragment_version = "1.7.0"
+
+    // Kotlin
+    implementation("androidx.fragment:fragment-ktx:$fragment_version")
 
 }
 

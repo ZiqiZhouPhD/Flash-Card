@@ -5,7 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
-import com.ziqiphyzhou.flashcard.card_database.data.repository.database.CardEntity
+import com.ziqiphyzhou.flashcard.card_handle.business.Card
 
 @Dao
 interface CardDao {
@@ -21,6 +21,9 @@ interface CardDao {
 
     @Query("SELECT * FROM card WHERE previous = :id")
     fun getNextById(id: Int): CardEntity
+
+    @Query("SELECT * FROM card WHERE title LIKE :title AND id != 0")
+    fun getAllByTitle(title: String): List<CardEntity>
 
     @Update
     fun updateCard(cardEntity: CardEntity)

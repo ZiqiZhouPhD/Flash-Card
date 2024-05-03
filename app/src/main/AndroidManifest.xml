@@ -14,7 +14,11 @@
         android:theme="@style/Theme.FlashCard"
         tools:targetApi="31">
         <activity
-            android:name=".shared.presentation.view.MainActivity"
+            android:name=".card_delete.presentation.DeleteActivity"
+            android:exported="false"
+            android:parentActivityName=".card.presentation.MainActivity" />
+        <activity
+            android:name=".card.presentation.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

@@ -13,8 +13,8 @@ import com.ziqiphyzhou.flashcard.card_database.data.repository.CardRepository
 import com.ziqiphyzhou.flashcard.card_database.data.repository.database.CardRepositoryDatabase
 import com.ziqiphyzhou.flashcard.card_database.data.repository.database.CardDao
 import com.ziqiphyzhou.flashcard.card_database.data.repository.database.CardDatabase
-import com.ziqiphyzhou.flashcard.handle_card.business.CardHandler
-import com.ziqiphyzhou.flashcard.handle_card.business.CardHandlerImpl
+import com.ziqiphyzhou.flashcard.card_handle.business.CardHandler
+import com.ziqiphyzhou.flashcard.card_handle.business.CardHandlerImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

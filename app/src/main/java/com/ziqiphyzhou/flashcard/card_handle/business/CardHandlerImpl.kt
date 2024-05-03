@@ -1,4 +1,4 @@
-package com.ziqiphyzhou.flashcard.handle_card.business
+package com.ziqiphyzhou.flashcard.card_handle.business
 
 import com.ziqiphyzhou.flashcard.card_database.data.repository.CardRepository
 import kotlinx.coroutines.Dispatchers
@@ -37,5 +37,9 @@ class CardHandlerImpl @Inject constructor(private val repository: CardRepository
             repository.add(title, body)
         }
     }
+
+    override suspend fun searchCardsBeginWith(
+        substring: String
+    ) = repository.getAllBeginWith(substring)
 
 }

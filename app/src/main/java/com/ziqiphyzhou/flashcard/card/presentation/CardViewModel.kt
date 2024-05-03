@@ -2,16 +2,14 @@
 The ViewModel supplies and controls the data for a view
 */
 
-package com.ziqiphyzhou.flashcard.shared.presentation.view_model
+package com.ziqiphyzhou.flashcard.card.presentation
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ziqiphyzhou.flashcard.card_database.data.repository.CardRepository
-import com.ziqiphyzhou.flashcard.handle_card.business.CardHandler
-import com.ziqiphyzhou.flashcard.shared.presentation.view_state.CardViewContent
-import com.ziqiphyzhou.flashcard.shared.presentation.view_state.CardViewState
+import com.ziqiphyzhou.flashcard.card_handle.business.CardHandler
+import com.ziqiphyzhou.flashcard.shared.presentation.view_model.Event
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject

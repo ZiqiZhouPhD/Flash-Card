@@ -4,7 +4,7 @@
 
 package com.ziqiphyzhou.flashcard.card_database.data.repository
 
-import com.ziqiphyzhou.flashcard.handle_card.business.Card
+import com.ziqiphyzhou.flashcard.card_handle.business.Card
 
 // public functions in this class should maintain the integrity of the card repo
 interface CardRepository {
@@ -12,6 +12,8 @@ interface CardRepository {
     suspend fun getTop(): Card
     suspend fun insertTopAfterById(id: Int)
     suspend fun isStructureIntact(): Boolean
-    suspend fun add(title: String, body: String)
+    suspend fun add(title: String, body: String): Boolean
+    suspend fun getAllBeginWith(substring: String): List<Card>
+    suspend fun delete(id: Int): Boolean
 
 }
