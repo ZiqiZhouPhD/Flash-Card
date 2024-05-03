@@ -8,6 +8,7 @@ package com.ziqiphyzhou.flashcard.card.presentation
 import android.content.Intent
 import android.graphics.BlurMaskFilter
 import android.os.Bundle
+import android.util.Log
 import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
@@ -15,14 +16,18 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.PopupMenu
+import androidx.core.content.edit
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
-import com.google.android.material.bottomsheet.BottomSheetDialog
+import androidx.preference.PreferenceManager
+import com.google.gson.Gson
 import com.ziqiphyzhou.flashcard.R
+import com.ziqiphyzhou.flashcard.card_add.presentation.AddActivity
 import com.ziqiphyzhou.flashcard.card_delete.presentation.DeleteActivity
 import com.ziqiphyzhou.flashcard.databinding.ActivityMainBinding
-import com.ziqiphyzhou.flashcard.databinding.DialogAddCardBinding
+import com.ziqiphyzhou.flashcard.shared.BOOKMARKS_JSON_DEFAULT
+import com.ziqiphyzhou.flashcard.shared.BOOKMARKS_SHAREDPREF_KEY
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -32,7 +37,11 @@ import kotlinx.coroutines.launch
 class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
 
     private lateinit var binding: ActivityMainBinding
+    private var isFrozen = true
+    private var cardBodyText = ""
     private val viewModel: CardViewModel by viewModels()
+    private val sharedPref by lazy { PreferenceManager.getDefaultSharedPreferences(this) }
+    private val gson = Gson()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,9 +54,9 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
             insets
         }
 
-        viewModel.viewState.observe(this) { viewState ->
-            updateUi(viewState)
-        }
+        setBookmarksToSharedPreferencesAndViewModel()
+
+        viewModel.viewState.observe(this) { viewState -> updateUi(viewState) }
         viewModel.loadCard()
 
         viewModel.addCardSuccessMessage.observe(this) { event ->
@@ -56,52 +65,74 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
             }
         }
 
-        binding.fab.setOnClickListener {
-            showMenu(it)
+        binding.fab.setOnClickListener { showMenu(it) }
+
+        binding.btnRemember.setOnClickListener { viewModel.buryCard(true) }
+
+        binding.btnForgot.setOnClickListener { viewModel.buryCard(false) }
+
+        binding.main.setOnClickListener {
+            if (!isFrozen) {
+                binding.tvBody.text = cardBodyText
+                binding.cvBody.visibility = View.VISIBLE
+            }
         }
 
     }
 
+    override fun onRestart() {
+        super.onRestart()
+        Log.d("qwer","onRestartTriggered")
+        setBookmarksToSharedPreferencesAndViewModel()
+    }
+
+    private fun setBookmarksToSharedPreferencesAndViewModel() {
+        // get bookmarks from shared preferences, initialize shared preferences if does not exist
+        val bookmarksJson = sharedPref.getString(BOOKMARKS_SHAREDPREF_KEY, null) ?: BOOKMARKS_JSON_DEFAULT
+        CoroutineScope(Dispatchers.Main).launch {
+            Log.d("qwer","should set bookmarks on view model ")
+            viewModel.setBookmarks(gson.fromJson(bookmarksJson, Array<Int>::class.java).toList())
+        }
+        sharedPref.edit { putString(BOOKMARKS_SHAREDPREF_KEY, bookmarksJson) }
+    }
+
     private fun updateUi(viewState: CardViewState) {
+
+        fun setTextBlur(filter: BlurMaskFilter?) {
+            binding.tvTitle.paint.setMaskFilter(filter)
+            binding.tvBody.paint.setMaskFilter(filter)
+        }
+
+        fun loadCardDataToViewShowTitleOnly(content: CardViewContent) {
+            cardBodyText = content.body
+            binding.tvTitle.text = content.title
+            binding.tvBody.text = ""
+        }
 
         fun setButtonEnabled(isEnabled: Boolean) {
             binding.btnRemember.isEnabled = isEnabled
             binding.btnForgot.isEnabled = isEnabled
         }
 
-        fun loadCardDataToView(content: CardViewContent) {
-            binding.tvTitle.text = content.title
-            binding.tvBody.text = content.body
-        }
-
         when (viewState) {
             is CardViewState.ShowTitleOnly -> {
-                loadCardDataToView(viewState.content)
-                binding.tvTitle.paint.setMaskFilter(null)
-                binding.tvBody.paint.setMaskFilter(null)
-                binding.cvBody.isVisible = false
+                isFrozen = false
+                binding.cvBody.visibility = View.GONE
+                setTextBlur(null)
+                loadCardDataToViewShowTitleOnly(viewState.content)
                 setButtonEnabled(true)
             }
 
-            is CardViewState.ShowAllContent -> {
-                loadCardDataToView(viewState.content)
-                binding.tvTitle.paint.setMaskFilter(null)
-                binding.tvBody.paint.setMaskFilter(null)
-                binding.cvBody.isVisible = true
-                setButtonEnabled(true)
-            }
-
-            is CardViewState.Freeze -> {
-                binding.tvTitle.paint.setMaskFilter(BlurMaskFilter(6f, BlurMaskFilter.Blur.NORMAL))
-                binding.tvBody.paint.setMaskFilter(BlurMaskFilter(6f, BlurMaskFilter.Blur.NORMAL))
+            CardViewState.Freeze -> {
+                isFrozen = true
+                setTextBlur(BlurMaskFilter(8f, BlurMaskFilter.Blur.NORMAL))
                 setButtonEnabled(false)
             }
         }
     }
 
     private fun showMenu(v: View) {
-        PopupMenu(this, v).apply {
-            // MainActivity implements OnMenuItemClickListener.
+        PopupMenu(this, v).apply { // MainActivity implements OnMenuItemClickListener.
             setOnMenuItemClickListener(this@MainActivity)
             inflate(R.menu.menu_main)
             show()
@@ -110,47 +141,21 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
 
     override fun onMenuItemClick(item: MenuItem): Boolean {
         return when (item.itemId) {
-            R.id.menu_item_add -> showAddCardDialog()
+            R.id.menu_item_add -> { //showAddCardDialog()
+                startActivity(Intent(this, AddActivity::class.java))
+                true
+            }
+
             R.id.menu_item_delete -> {
                 val intent = Intent(this, DeleteActivity::class.java)
                 startActivity(intent)
                 true
             }
 
-            R.id.menu_item_import -> {
-                true
-            }
-
-            R.id.menu_item_export -> {
-                true
-            }
-
-            R.id.menu_item_settings -> {
-                true
-            }
+            R.id.menu_item_settings -> true
 
             else -> false
         }
-    }
-
-    private fun showAddCardDialog(): Boolean {
-
-        val dialogBinding = DialogAddCardBinding.inflate(layoutInflater)
-        val dialog = BottomSheetDialog(this)
-        dialog.setContentView(dialogBinding.root)
-
-        dialogBinding.buttonSave.setOnClickListener {
-            CoroutineScope(Dispatchers.Main).launch {
-                viewModel.addCard(
-                    title = dialogBinding.editTextCardTitle.text.toString(),
-                    body = dialogBinding.editTextCardBody.text.toString()
-                )
-            }
-            dialog.dismiss()
-        }
-
-        dialog.show()
-        return true
     }
 
 }

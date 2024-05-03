@@ -5,15 +5,18 @@ import android.util.Log
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.viewModels
+import com.google.android.material.snackbar.Snackbar
 import com.ziqiphyzhou.flashcard.R
 import com.ziqiphyzhou.flashcard.card.presentation.CardViewModel
 import com.ziqiphyzhou.flashcard.databinding.ActivityDeleteBinding
 import com.ziqiphyzhou.flashcard.databinding.ActivityMainBinding
 import dagger.hilt.android.AndroidEntryPoint
+import android.view.inputmethod.InputMethodManager
 
 @AndroidEntryPoint
 class DeleteActivity : AppCompatActivity() {
@@ -38,6 +41,15 @@ class DeleteActivity : AppCompatActivity() {
 
         binding.topBarDelete.setNavigationOnClickListener {
             this@DeleteActivity.onBackPressedDispatcher.onBackPressed()
+        }
+
+        viewModel.deleteCardSuccessMessage.observe(this) { event ->
+            event.getContentIfNotHandled()?.let {
+                binding.editTextSearchForDelete.text.clear()
+                val inputMethodManager = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+                inputMethodManager.hideSoftInputFromWindow(binding.root.windowToken, 0)
+                Snackbar.make(binding.root, it, Snackbar.LENGTH_LONG).show()
+            }
         }
     }
 }

@@ -101,6 +101,15 @@ dependencies {
     // Kotlin
     implementation("androidx.fragment:fragment-ktx:$fragment_version")
 
+    implementation("com.google.android.material:material:1.12.0")
+
+    implementation("com.google.code.gson:gson:2.10")
+
+    val preference_version = "1.2.1"
+
+    // Kotlin
+    implementation("androidx.preference:preference-ktx:$preference_version")
+    
 }
 
 // Allow references to generated code

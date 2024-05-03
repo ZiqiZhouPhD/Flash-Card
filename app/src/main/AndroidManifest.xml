@@ -14,6 +14,10 @@
         android:theme="@style/Theme.FlashCard"
         tools:targetApi="31">
         <activity
+            android:name=".card_add.presentation.AddActivity"
+            android:exported="false"
+            android:parentActivityName=".card.presentation.MainActivity" />
+        <activity
             android:name=".card_delete.presentation.DeleteActivity"
             android:exported="false"
             android:parentActivityName=".card.presentation.MainActivity" />

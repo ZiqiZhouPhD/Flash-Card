@@ -4,6 +4,7 @@ The ViewModel supplies and controls the data for a view
 
 package com.ziqiphyzhou.flashcard.card.presentation
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -11,6 +12,8 @@ import androidx.lifecycle.viewModelScope
 import com.ziqiphyzhou.flashcard.card_handle.business.CardHandler
 import com.ziqiphyzhou.flashcard.shared.presentation.view_model.Event
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -36,14 +39,24 @@ class CardViewModel @Inject constructor(private val cardHandler: CardHandler) : 
         viewModelScope.launch {
             _viewState.postValue(CardViewState.Freeze)
             val card = cardHandler.getTop()
-            _viewState.postValue(CardViewState.ShowAllContent(CardViewContent(card.title, card.body)))
+            _viewState.postValue(CardViewState.ShowTitleOnly(CardViewContent(card.title, card.body)))
         }
     }
 
-    fun addCard(title: String, body: String) {
+    fun setBookmarks(bookmarks: List<Int>) {
         viewModelScope.launch {
-            cardHandler.add(title, body)
-            _addCardSuccessMessage.value = Event("Card successfully added! ")
+            Log.d("qwer","should set bookmarks on card handler")
+            _viewState.postValue(CardViewState.Freeze)
+            cardHandler.initBookmarkIdList(bookmarks)
+            loadCard()
+        }
+    }
+
+    fun buryCard(isRemembered: Boolean) {
+        viewModelScope.launch {
+            _viewState.postValue(CardViewState.Freeze)
+            cardHandler.buryCard(isRemembered)
+            loadCard()
         }
     }
 

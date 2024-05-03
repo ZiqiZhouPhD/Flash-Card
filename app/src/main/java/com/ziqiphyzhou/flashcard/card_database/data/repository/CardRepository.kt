@@ -10,10 +10,13 @@ import com.ziqiphyzhou.flashcard.card_handle.business.Card
 interface CardRepository {
 
     suspend fun getTop(): Card
-    suspend fun insertTopAfterById(id: Int)
     suspend fun isStructureIntact(): Boolean
     suspend fun add(title: String, body: String): Boolean
     suspend fun getAllBeginWith(substring: String): List<Card>
     suspend fun delete(id: Int): Boolean
+    suspend fun findInsertionPosIds(posList: List<Int>): List<Int>
+    suspend fun buryTopAfterId(buryAfterThisId: Int)
+    suspend fun updateTopCardLevelByChange(change: Int)
+    suspend fun getNextIdById(id: Int): Int
 
 }
