@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+<!--    seems not to be working -->
     <style name="SnackbarWithMargin" parent="Widget.MaterialComponents.Snackbar">
         <item name="android:layout_margin">32dp</item>
     </style>
