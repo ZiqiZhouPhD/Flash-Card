@@ -6,7 +6,7 @@ sealed class DeleteListViewState {
 }
 
 data class DeleteCardViewState(
-    val id: Int,
+    val id: String,
     val title: String,
     val body: String,
 )

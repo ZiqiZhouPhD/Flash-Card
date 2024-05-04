@@ -10,7 +10,7 @@ class CardHandlerImpl @Inject constructor(private val repository: CardRepository
 
     // ids of insertion positions labeled by levels
     // needs refresh whenever card table is updated
-    private val bookmarkList = arrayListOf<Int>()
+    private val bookmarkList = arrayListOf<String>()
 
     override suspend fun getTop(): Card {
         return withContext(Dispatchers.IO) {
@@ -20,10 +20,8 @@ class CardHandlerImpl @Inject constructor(private val repository: CardRepository
 
     override suspend fun initBookmarkIdList(insertPosList: List<Int>) {
         return withContext(Dispatchers.IO) {
-            Log.d("qwer", "structure is intact: " + repository.isStructureIntact().toString())
             bookmarkList.clear()
             bookmarkList.addAll(repository.findInsertionPosIds(insertPosList))
-            Log.d("qwer", "set: " + bookmarkList.toString())
         }
     }
 
@@ -38,28 +36,28 @@ class CardHandlerImpl @Inject constructor(private val repository: CardRepository
     }
 
     override suspend fun buryCard(isRemembered: Boolean) {
-        Log.d("qwer", "before: " + bookmarkList.toString())
         return withContext(Dispatchers.IO) {
+
             when (isRemembered) {
                 true -> repository.updateTopCardLevelByChange(1)
                 false -> repository.updateTopCardLevelByChange(-2)
             }
+
             val topCard = repository.getTop()
             var buryLevel = 0 // if forgot
             if (isRemembered) {
                 buryLevel = getTrimLevelByBookmarkListSize(topCard)
             }
             val insertAfterThisId = bookmarkList[buryLevel]
-            Log.d("qwer", "id: " + repository.getTop().id + ", level: " + repository.getTop().level)
-            Log.d("qwer", "inserting after card id: " + insertAfterThisId.toString())
+
             updateBookmarksBeforeBury(topCard.id, buryLevel)
-            Log.d("qwer", "update bookmarks: " + bookmarkList.toString())
+
             repository.buryTopAfterId(insertAfterThisId)
-            Log.d("qwer", "card bury end")
+
         }
     }
 
-    private suspend fun updateBookmarksBeforeBury(topCardId: Int, buryLevel: Int) {
+    private suspend fun updateBookmarksBeforeBury(topCardId: String, buryLevel: Int) {
         for (level in 0..<buryLevel) {
             bookmarkList[level] = repository.getNextIdById(bookmarkList[level])
         }

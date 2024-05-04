@@ -3,7 +3,7 @@ Activities are part of the View Layer.
 Activities / fragments receive live data posted by view models.
 */
 
-package com.ziqiphyzhou.flashcard.card.presentation
+package com.ziqiphyzhou.flashcard.card_main.presentation
 
 import android.content.Intent
 import android.graphics.BlurMaskFilter
@@ -19,13 +19,13 @@ import androidx.appcompat.widget.PopupMenu
 import androidx.core.content.edit
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.isVisible
 import androidx.preference.PreferenceManager
 import com.google.gson.Gson
 import com.ziqiphyzhou.flashcard.R
 import com.ziqiphyzhou.flashcard.card_add.presentation.AddActivity
 import com.ziqiphyzhou.flashcard.card_delete.presentation.DeleteActivity
 import com.ziqiphyzhou.flashcard.databinding.ActivityMainBinding
+import com.ziqiphyzhou.flashcard.settings_manage.presentation.SettingsActivity
 import com.ziqiphyzhou.flashcard.shared.BOOKMARKS_JSON_DEFAULT
 import com.ziqiphyzhou.flashcard.shared.BOOKMARKS_SHAREDPREF_KEY
 import dagger.hilt.android.AndroidEntryPoint
@@ -82,7 +82,6 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
 
     override fun onRestart() {
         super.onRestart()
-        Log.d("qwer","onRestartTriggered")
         setBookmarksToSharedPreferencesAndViewModel()
     }
 
@@ -90,7 +89,6 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
         // get bookmarks from shared preferences, initialize shared preferences if does not exist
         val bookmarksJson = sharedPref.getString(BOOKMARKS_SHAREDPREF_KEY, null) ?: BOOKMARKS_JSON_DEFAULT
         CoroutineScope(Dispatchers.Main).launch {
-            Log.d("qwer","should set bookmarks on view model ")
             viewModel.setBookmarks(gson.fromJson(bookmarksJson, Array<Int>::class.java).toList())
         }
         sharedPref.edit { putString(BOOKMARKS_SHAREDPREF_KEY, bookmarksJson) }
@@ -147,12 +145,14 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
             }
 
             R.id.menu_item_delete -> {
-                val intent = Intent(this, DeleteActivity::class.java)
-                startActivity(intent)
+                startActivity(Intent(this, DeleteActivity::class.java))
                 true
             }
 
-            R.id.menu_item_settings -> true
+            R.id.menu_item_settings -> {
+                startActivity(Intent(this, SettingsActivity::class.java))
+                true
+            }
 
             else -> false
         }

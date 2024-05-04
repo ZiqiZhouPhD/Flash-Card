@@ -2,7 +2,7 @@
 The ViewModel supplies and controls the data for a view
 */
 
-package com.ziqiphyzhou.flashcard.card.presentation
+package com.ziqiphyzhou.flashcard.card_main.presentation
 
 import android.util.Log
 import androidx.lifecycle.LiveData
@@ -12,8 +12,6 @@ import androidx.lifecycle.viewModelScope
 import com.ziqiphyzhou.flashcard.card_handle.business.CardHandler
 import com.ziqiphyzhou.flashcard.shared.presentation.view_model.Event
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -45,7 +43,6 @@ class CardViewModel @Inject constructor(private val cardHandler: CardHandler) : 
 
     fun setBookmarks(bookmarks: List<Int>) {
         viewModelScope.launch {
-            Log.d("qwer","should set bookmarks on card handler")
             _viewState.postValue(CardViewState.Freeze)
             cardHandler.initBookmarkIdList(bookmarks)
             loadCard()

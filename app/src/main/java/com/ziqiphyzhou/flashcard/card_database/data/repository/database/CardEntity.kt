@@ -10,9 +10,9 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "card")
 data class CardEntity(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    @PrimaryKey val id: String,
     var title: String,
     var body: String,
     var level: Int = 0,
-    var previous: Int
+    var previous: String
 )

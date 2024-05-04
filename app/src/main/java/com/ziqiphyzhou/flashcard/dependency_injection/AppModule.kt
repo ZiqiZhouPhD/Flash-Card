@@ -32,7 +32,9 @@ class AppModule {
         context,
         CardDatabase::class.java,
         "card-database" // this name can be anything
-    ).createFromAsset("sample.db").build()
+    ).createFromAsset("empty.db")
+        //.fallbackToDestructiveMigration()
+        .build()
 
     @Provides
     fun provideCardDao(

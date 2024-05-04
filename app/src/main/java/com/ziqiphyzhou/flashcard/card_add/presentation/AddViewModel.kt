@@ -23,7 +23,7 @@ class AddViewModel @Inject constructor(
 
     fun add(title: String, body: String) {
         viewModelScope.launch {
-            val saveTitle = title.takeIf { it != "" } ?: "null"
+            val saveTitle = title//.takeIf { it != "" } ?: "null"
             repository.add(saveTitle, body)
             _addCardSuccessMessage.value = Event("Card \"${saveTitle}\" added. ")
         }

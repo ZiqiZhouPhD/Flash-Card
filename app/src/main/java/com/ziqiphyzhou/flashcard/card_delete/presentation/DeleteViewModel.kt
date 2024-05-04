@@ -40,7 +40,7 @@ class DeleteViewModel @Inject constructor(
         }
     }
 
-    fun deleteIconClicked(id: Int, title: String) {
+    fun deleteIconClicked(id: String, title: String) {
         viewModelScope.launch {
             repository.delete(id)
             _deleteCardSuccessMessage.value = Event("Card \"${title}\" deleted. ")

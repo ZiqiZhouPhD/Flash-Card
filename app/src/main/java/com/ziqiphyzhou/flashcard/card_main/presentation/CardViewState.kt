@@ -5,7 +5,7 @@ It should be as simple as possible.
 It is not responsible for handling interactions.
 */
 
-package com.ziqiphyzhou.flashcard.card.presentation
+package com.ziqiphyzhou.flashcard.card_main.presentation
 
 // sealed classes are used to keep status
 sealed class CardViewState{

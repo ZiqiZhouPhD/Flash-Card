@@ -5,14 +5,14 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".card.presentation.MainActivity">
+    tools:context=".card_main.presentation.MainActivity">
 
     <LinearLayout
         android:id="@+id/ll_card"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="64dp"
+        android:padding="48dp"
         app:layout_constraintBottom_toTopOf="@id/btn_forgot"
         app:layout_constraintTop_toTopOf="parent">
 
@@ -27,7 +27,7 @@
                 android:layout_gravity="center"
                 android:layout_margin="16dp"
                 android:fontFamily="sans-serif-medium"
-                android:textSize="24sp"
+                android:textSize="28sp"
                 tools:text="sample entry" />
 
         </com.google.android.material.card.MaterialCardView>
@@ -45,7 +45,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:layout_margin="16dp"
+                android:layout_margin="20dp"
                 android:fontFamily="sans-serif-medium"
                 android:textSize="18sp"
                 tools:text="this is a sample explanation, it can be multi-lined" />
@@ -61,6 +61,7 @@
         android:layout_height="72dp"
         android:layout_marginBottom="24dp"
         android:text="@string/btn_remember"
+        android:textSize="18sp"
         app:layout_constraintBottom_toTopOf="@id/btn_forgot"
         app:layout_constraintEnd_toEndOf="@id/btn_forgot" />
 
@@ -72,6 +73,7 @@
         android:layout_marginRight="48dp"
         android:layout_marginBottom="72dp"
         android:text="@string/btn_forget"
+        android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintRight_toRightOf="parent" />
 

@@ -12,11 +12,14 @@ interface CardRepository {
     suspend fun getTop(): Card
     suspend fun isStructureIntact(): Boolean
     suspend fun add(title: String, body: String): Boolean
+    suspend fun getAll(): List<Card>
     suspend fun getAllBeginWith(substring: String): List<Card>
-    suspend fun delete(id: Int): Boolean
-    suspend fun findInsertionPosIds(posList: List<Int>): List<Int>
-    suspend fun buryTopAfterId(buryAfterThisId: Int)
+    suspend fun delete(id: String): Boolean
+    suspend fun findInsertionPosIds(posList: List<Int>): List<String>
+    suspend fun buryTopAfterId(buryAfterThisId: String)
     suspend fun updateTopCardLevelByChange(change: Int)
-    suspend fun getNextIdById(id: Int): Int
+    suspend fun getNextIdById(id: String): String
+    suspend fun importDatabase(importList: List<Card>): Boolean
+    suspend fun clearDatabase(): Boolean
 
 }

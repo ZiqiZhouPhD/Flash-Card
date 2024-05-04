@@ -14,15 +14,23 @@
         android:theme="@style/Theme.FlashCard"
         tools:targetApi="31">
         <activity
+            android:name=".import_export.presentation.ImportExportActivity"
+            android:exported="false"
+            android:parentActivityName=".settings_manage.presentation.SettingsActivity" />
+        <activity
+            android:name=".settings_manage.presentation.SettingsActivity"
+            android:exported="false"
+            android:parentActivityName=".card_main.presentation.MainActivity" />
+        <activity
             android:name=".card_add.presentation.AddActivity"
             android:exported="false"
-            android:parentActivityName=".card.presentation.MainActivity" />
+            android:parentActivityName=".card_main.presentation.MainActivity" />
         <activity
             android:name=".card_delete.presentation.DeleteActivity"
             android:exported="false"
-            android:parentActivityName=".card.presentation.MainActivity" />
+            android:parentActivityName=".card_main.presentation.MainActivity" />
         <activity
-            android:name=".card.presentation.MainActivity"
+            android:name=".card_main.presentation.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
