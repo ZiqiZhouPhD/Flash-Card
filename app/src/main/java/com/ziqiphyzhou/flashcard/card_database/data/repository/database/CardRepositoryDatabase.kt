@@ -30,11 +30,6 @@ class CardRepositoryDatabase @Inject constructor(private val cardDao: CardDao) :
 
     override suspend fun isStructureIntact(): Boolean {
         return withContext(Dispatchers.IO) {
-            try {
-                cardDao.getById("0")
-            } catch (e: Exception) {
-                return@withContext false
-            }
             isStructureIntactForList(cardDao.getAll())
         }
     }
@@ -232,7 +227,7 @@ class CardRepositoryDatabase @Inject constructor(private val cardDao: CardDao) :
         val linkToSet = mutableSetOf<String>() // has link pointing to it
         for (cardEntity in allCards) {
             if (cardEntity.id == "0") isZeroCardExist = true
-            if (cardEntity.previous in linkToSet || cardEntity.id in linkToSet) {
+            if (cardEntity.previous in linkToSet || cardEntity.id in linkFromSet) {
                 return false
             } else {
                 val isConnectedFromAny = cardEntity.id in linkToSet
