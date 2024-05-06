@@ -38,7 +38,7 @@ class CardRepositoryDatabase @Inject constructor(private val cardDao: CardDao) :
     private fun String.md5(): String {
         val md = MessageDigest.getInstance("MD5")
         val digest = md.digest(this.toByteArray())
-        return digest.toHexString()
+        return digest.toHexString().substring(0,8)
     }
 
     private fun checkIdCollision(id: String): String {
@@ -82,7 +82,7 @@ class CardRepositoryDatabase @Inject constructor(private val cardDao: CardDao) :
 //            } else cardDao.getAllByTitle("$substring%").map {
 //                Card(it.id, it.title, it.body, it.level, it.previous)
 //            }
-            cardDao.getAllByTitle("$substring%").take(10).map {
+            cardDao.getAllByTitle("$substring%").sortedBy { it.title }.take(10).map {
                 Card(it.id, it.title, it.body, it.level, it.previous)
             }
         }
@@ -106,7 +106,7 @@ class CardRepositoryDatabase @Inject constructor(private val cardDao: CardDao) :
         // input entries must be strictly increasing with posList[0] > 0
         // returns [topCard.id] if input invalid
         // returns [0] if card table has only the zeroCard
-        val topCardId = withContext(Dispatchers.IO) { cardDao.getNextById("0").id }
+        val topCardId = cardDao.getNextById("0").id
         if (topCardId == "0") return listOf<String>("0")
         var previous = 0
         for (i in posList) {
@@ -185,11 +185,6 @@ class CardRepositoryDatabase @Inject constructor(private val cardDao: CardDao) :
                         }
                     }
                 }
-            } catch (e: Exception) {
-                restoreDatabase(erasedList)
-                return@withContext false
-            }
-            try {
                 cardDao.upsertAll(importList.map {
                     CardEntity(it.id, it.title, it.body, it.level, it.previous)
                 })
@@ -197,7 +192,11 @@ class CardRepositoryDatabase @Inject constructor(private val cardDao: CardDao) :
                 restoreDatabase(erasedList)
                 return@withContext false
             }
-            isStructureIntact()
+            if (!isStructureIntact()) {
+                restoreDatabase(erasedList)
+                return@withContext false
+            }
+            true
         }
     }
 
@@ -236,7 +235,7 @@ class CardRepositoryDatabase @Inject constructor(private val cardDao: CardDao) :
                     linkFromSet.remove(cardEntity.previous)
                     linkToSet.remove(cardEntity.id)
                     if (linkFromSet.size == 0 && linkToSet.size == 0) {
-                        return cardEntity == lastCard
+                        return cardEntity == lastCard && isZeroCardExist
                     }
                 } else if (isConnectedFromAny) {
                     linkToSet.remove(cardEntity.id)
@@ -250,7 +249,7 @@ class CardRepositoryDatabase @Inject constructor(private val cardDao: CardDao) :
                 }
             }
         }
-        return isZeroCardExist
+        return false
     }
 
 }

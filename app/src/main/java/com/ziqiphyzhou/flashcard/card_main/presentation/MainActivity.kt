@@ -38,6 +38,7 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
 
     private lateinit var binding: ActivityMainBinding
     private var isFrozen = true
+    private var isInit = true
     private var cardBodyText = ""
     private val viewModel: CardViewModel by viewModels()
     private val sharedPref by lazy { PreferenceManager.getDefaultSharedPreferences(this) }
@@ -54,10 +55,8 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
             insets
         }
 
-        setBookmarksToSharedPreferencesAndViewModel()
-
         viewModel.viewState.observe(this) { viewState -> updateUi(viewState) }
-        viewModel.loadCard()
+        viewModel.initView()
 
         viewModel.addCardSuccessMessage.observe(this) { event ->
             event.getContentIfNotHandled()?.let {
@@ -72,6 +71,10 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
         binding.btnForgot.setOnClickListener { viewModel.buryCard(false) }
 
         binding.main.setOnClickListener {
+            if (isInit) {
+                viewModel.loadCard()
+                isInit = false
+            } else
             if (!isFrozen) {
                 binding.tvBody.text = cardBodyText
                 binding.cvBody.visibility = View.VISIBLE
@@ -82,7 +85,7 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
 
     override fun onRestart() {
         super.onRestart()
-        setBookmarksToSharedPreferencesAndViewModel()
+        viewModel.initView()
     }
 
     private fun setBookmarksToSharedPreferencesAndViewModel() {
@@ -125,6 +128,17 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
                 isFrozen = true
                 setTextBlur(BlurMaskFilter(8f, BlurMaskFilter.Blur.NORMAL))
                 setButtonEnabled(false)
+            }
+
+            CardViewState.Init -> {
+                binding.tvTitle.text = "Tap to Start"
+                binding.tvBody.text = ""
+                isInit = true
+                isFrozen = true
+                binding.cvBody.visibility = View.GONE
+                setTextBlur(null)
+                setButtonEnabled(false)
+                setBookmarksToSharedPreferencesAndViewModel()
             }
         }
     }

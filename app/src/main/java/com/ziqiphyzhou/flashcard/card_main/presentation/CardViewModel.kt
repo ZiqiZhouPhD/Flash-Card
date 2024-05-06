@@ -43,9 +43,7 @@ class CardViewModel @Inject constructor(private val cardHandler: CardHandler) : 
 
     fun setBookmarks(bookmarks: List<Int>) {
         viewModelScope.launch {
-            _viewState.postValue(CardViewState.Freeze)
             cardHandler.initBookmarkIdList(bookmarks)
-            loadCard()
         }
     }
 
@@ -55,6 +53,10 @@ class CardViewModel @Inject constructor(private val cardHandler: CardHandler) : 
             cardHandler.buryCard(isRemembered)
             loadCard()
         }
+    }
+
+    fun initView() {
+        _viewState.postValue(CardViewState.Init)
     }
 
 }
