@@ -2,8 +2,10 @@
 
 ## To-dos 
 
-* Text-to speech.
-* Card state attribute.
 * Edit activity.
 * Voice control.
-* Daily count. 
+* Daily count.
+* Setup themes. 
+* Edit behaviors. 
+* Change icon (get svg first). 
+* Keep activity while screen locked. 

@@ -17,9 +17,9 @@ interface CardDao {
     @Insert
     fun addCard(cardEntity: CardEntity)
 
-    @Insert
-    @JvmSuppressWildcards
-    fun addAll(cardEntityList: List<CardEntity>)
+//    @Insert
+//    @JvmSuppressWildcards
+//    fun addAll(cardEntityList: List<CardEntity>)
 
     @Query("SELECT * FROM card")
     fun getAll(): List<CardEntity>

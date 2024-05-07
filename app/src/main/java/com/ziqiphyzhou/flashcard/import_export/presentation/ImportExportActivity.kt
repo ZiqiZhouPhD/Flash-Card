@@ -24,7 +24,6 @@ import com.ziqiphyzhou.flashcard.R
 import com.ziqiphyzhou.flashcard.card_add.presentation.AddViewModel
 import com.ziqiphyzhou.flashcard.databinding.ActivityImportExportBinding
 import com.ziqiphyzhou.flashcard.databinding.ActivityMainBinding
-import com.ziqiphyzhou.flashcard.shared.SAMPLE_FILE_NAME_STRIPPED
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

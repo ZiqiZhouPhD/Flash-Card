@@ -23,9 +23,12 @@ class CardRepositoryDatabase @Inject constructor(private val cardDao: CardDao) :
     // the suspended function will be run on the IO dispatcher
     override suspend fun getTop(): Card { // return zeroCard if no other card is present
         return withContext(Dispatchers.IO) {
-            val topCard = cardDao.getNextById("0")
-            Card(topCard.id, topCard.title, topCard.body, topCard.level, topCard.previous)
+            castEntityToCard(cardDao.getNextById("0"))
         }
+    }
+
+    private fun castEntityToCard(entity: CardEntity): Card {
+        return Card(entity.id, entity.title, entity.body, entity.level, entity.previous, entity.state == 1)
     }
 
     override suspend fun isStructureIntact(): Boolean {
@@ -69,22 +72,15 @@ class CardRepositoryDatabase @Inject constructor(private val cardDao: CardDao) :
 
     override suspend fun getAll(): List<Card> {
         return withContext(Dispatchers.IO) {
-            cardDao.getAll().map {
-                Card(it.id, it.title, it.body, it.level, it.previous)
-            }
+            cardDao.getAll().map { castEntityToCard(it) }
         }
     }
 
     override suspend fun getAllBeginWith(substring: String): List<Card> {
         return withContext(Dispatchers.IO) {
-//            if (substring.length <= 1) cardDao.getAllByTitle(substring).map {
-//                Card(it.id, it.title, it.body, it.level, it.previous)
-//            } else cardDao.getAllByTitle("$substring%").map {
-//                Card(it.id, it.title, it.body, it.level, it.previous)
-//            }
-            cardDao.getAllByTitle("$substring%").sortedBy { it.title }.take(10).map {
-                Card(it.id, it.title, it.body, it.level, it.previous)
-            }
+            cardDao.getAllByTitle("$substring%")
+                .sortedBy { it.title }.take(10)
+                .map { castEntityToCard(it) }
         }
     }
 
@@ -154,11 +150,12 @@ class CardRepositoryDatabase @Inject constructor(private val cardDao: CardDao) :
         }
     }
 
-    override suspend fun updateTopCardLevelByChange(change: Int) {
+    override suspend fun setTopCardLevelAndState(level: Int, state: Boolean) {
         withContext(Dispatchers.IO) {
             val topCard = cardDao.getNextById("0")
             if (topCard.id == "0") return@withContext
-            topCard.level += change
+            topCard.state = state.compareTo(false)
+            topCard.level = level
             if (topCard.level < 0) topCard.level = 0
             else if (topCard.level > LEVEL_CAP) topCard.level = LEVEL_CAP
             cardDao.updateCard(topCard)
@@ -201,8 +198,7 @@ class CardRepositoryDatabase @Inject constructor(private val cardDao: CardDao) :
     }
 
     override suspend fun clearDatabase(): Boolean {
-        val it = cardDao.getById("0")
-        return importDatabase(listOf<Card>(Card("0", it.title, it.body, it.level, "0")))
+        return importDatabase(listOf<Card>(castEntityToCard(cardDao.getById("0"))))
     }
 
     private suspend fun restoreDatabase(cardList: List<CardEntity>) {
@@ -225,6 +221,7 @@ class CardRepositoryDatabase @Inject constructor(private val cardDao: CardDao) :
         val linkFromSet = mutableSetOf<String>() // has link pointing from it
         val linkToSet = mutableSetOf<String>() // has link pointing to it
         for (cardEntity in allCards) {
+            if (cardEntity.title == "") return false
             if (cardEntity.id == "0") isZeroCardExist = true
             if (cardEntity.previous in linkToSet || cardEntity.id in linkFromSet) {
                 return false

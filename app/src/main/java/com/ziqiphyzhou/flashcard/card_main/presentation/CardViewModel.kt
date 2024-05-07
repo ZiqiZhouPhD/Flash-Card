@@ -29,10 +29,6 @@ class CardViewModel @Inject constructor(private val cardHandler: CardHandler) : 
     val viewState: LiveData<CardViewState>
         get() = _viewState
 
-    private val _addCardSuccessMessage = MutableLiveData<Event<String>>()
-    val addCardSuccessMessage : LiveData<Event<String>>
-        get() = _addCardSuccessMessage
-
     fun loadCard() {
         viewModelScope.launch {
             _viewState.postValue(CardViewState.Freeze)

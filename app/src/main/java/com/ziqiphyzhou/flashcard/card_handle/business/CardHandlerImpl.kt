@@ -2,6 +2,7 @@ package com.ziqiphyzhou.flashcard.card_handle.business
 
 import android.util.Log
 import com.ziqiphyzhou.flashcard.card_database.data.repository.CardRepository
+import com.ziqiphyzhou.flashcard.shared.LEVEL_CAP
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -27,7 +28,9 @@ class CardHandlerImpl @Inject constructor(private val repository: CardRepository
 
     override suspend fun searchCardsBeginWith(substring: String): List<Card> {
         return withContext(Dispatchers.IO) {
-            repository.getAllBeginWith(substring)
+            if (substring != "") { // empty title not allowed
+                repository.getAllBeginWith(substring)
+            } else listOf()
         }
     }
 
@@ -38,12 +41,26 @@ class CardHandlerImpl @Inject constructor(private val repository: CardRepository
     override suspend fun buryCard(isRemembered: Boolean) {
         return withContext(Dispatchers.IO) {
 
+            val topCard = repository.getTop()
+
             when (isRemembered) {
-                true -> repository.updateTopCardLevelByChange(1)
-                false -> repository.updateTopCardLevelByChange(-2)
+                true -> {
+                    when (topCard.state) {
+                        true -> topCard.level += 1
+                        false -> topCard.state = true
+                    }
+                }
+                false -> {
+                    topCard.level -= 1
+                    topCard.state = false
+                }
             }
 
-            val topCard = repository.getTop()
+            if (topCard.level < 0) topCard.level = 0
+            else if (topCard.level > LEVEL_CAP) topCard.level = LEVEL_CAP
+
+            repository.setTopCardLevelAndState(topCard.level, topCard.state)
+
             var buryLevel = 0 // if forgot
             if (isRemembered) {
                 buryLevel = getTrimLevelByBookmarkListSize(topCard)

@@ -14,5 +14,6 @@ data class CardEntity(
     var title: String,
     var body: String,
     var level: Int = 0,
-    var previous: String
+    var previous: String,
+    var state: Int = 1 // set to 0 when card forgotten, set to 1 when remembered
 )

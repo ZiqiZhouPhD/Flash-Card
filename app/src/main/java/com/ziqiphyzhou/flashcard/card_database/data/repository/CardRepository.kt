@@ -17,7 +17,7 @@ interface CardRepository {
     suspend fun delete(id: String): Boolean
     suspend fun findInsertionPosIds(posList: List<Int>): List<String>
     suspend fun buryTopAfterId(buryAfterThisId: String)
-    suspend fun updateTopCardLevelByChange(change: Int)
+    suspend fun setTopCardLevelAndState(level: Int, state: Boolean)
     suspend fun getNextIdById(id: String): String
     suspend fun importDatabase(importList: List<Card>): Boolean
     suspend fun clearDatabase(): Boolean
