@@ -4,7 +4,6 @@ The repo belongs to the repo layer.
 
 package com.ziqiphyzhou.flashcard.card_database.data.repository.database
 
-import android.util.Log
 import com.ziqiphyzhou.flashcard.card_database.data.repository.CardRepository
 import com.ziqiphyzhou.flashcard.card_handle.business.Card
 import com.ziqiphyzhou.flashcard.shared.LEVEL_CAP
@@ -51,10 +50,10 @@ class CardRepositoryDatabase @Inject constructor(private val cardDao: CardDao) :
         return digest.toHexString().substring(0, 8)
     }
 
-    private fun checkIdCollision(id: String): String {
-        var noCollideId = id
+    private fun getIdWithoutCollision(title: String, coll: String): String {
+        var noCollideId = "${title.md5()}@$coll"
         while (cardDao.isIdExist(noCollideId)) {
-            noCollideId = noCollideId.md5()
+            noCollideId = "${noCollideId.md5()}@$coll"
         }
         return noCollideId
     }
@@ -63,7 +62,7 @@ class CardRepositoryDatabase @Inject constructor(private val cardDao: CardDao) :
         return withContext(Dispatchers.IO) {
             val zeroCard = cardDao.getById("@$coll")
             val lastCard = cardDao.getById(zeroCard.previous)
-            zeroCard.previous = checkIdCollision(title.md5())
+            zeroCard.previous = getIdWithoutCollision(title, coll)
             cardDao.addCard(
                 CardEntity(
                     id = zeroCard.previous,
@@ -181,6 +180,9 @@ class CardRepositoryDatabase @Inject constructor(private val cardDao: CardDao) :
             val erasedList = cardDao.getAll(coll)
             val importIdList = importList.map { it.id }
             if ("@$coll" !in importIdList) return@withContext false
+            for (id in importIdList) {
+                if (!id.endsWith("@$coll")) return@withContext false
+            }
 
             try {
                 CoroutineScope(Dispatchers.IO).launch {
@@ -217,16 +219,6 @@ class CardRepositoryDatabase @Inject constructor(private val cardDao: CardDao) :
         return importCollection(listOf<Card>(castEntityToCard(cardDao.getById("@$coll"))), coll)
     }
 
-    override suspend fun createCollection(coll: String): Boolean {
-        return withContext(Dispatchers.IO) {
-            if (cardDao.isIdExist("@$coll")) false
-            else {
-                cardDao.addCard(createZeroCard(coll))
-                true
-            }
-        }
-    }
-
     override suspend fun deleteCollection(coll: String): Boolean {
         return withContext(Dispatchers.IO) {
             cardDao.deleteAll(coll)
@@ -245,7 +237,7 @@ class CardRepositoryDatabase @Inject constructor(private val cardDao: CardDao) :
         return withContext(Dispatchers.IO) {
             if (cardDao.isIdExist("@$coll")) false
             else {
-                cardDao.addCard(CardEntity("@$coll", "null", "null", 0, "@$coll", 1, coll))
+                cardDao.addCard(createZeroCard(coll))
                 true
             }
         }

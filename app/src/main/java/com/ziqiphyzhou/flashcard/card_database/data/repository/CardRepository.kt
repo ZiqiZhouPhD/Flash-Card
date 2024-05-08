@@ -21,7 +21,6 @@ interface CardRepository {
     suspend fun getNextIdById(id: String): String
     suspend fun importCollection(importList: List<Card>, coll: String): Boolean
     suspend fun clearCollection(coll: String): Boolean
-    suspend fun createCollection(coll: String): Boolean
     suspend fun deleteCollection(coll: String): Boolean
     suspend fun isCollectionExist(coll: String?): Boolean
     suspend fun addCollection(coll: String): Boolean

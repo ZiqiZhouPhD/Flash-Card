@@ -2,7 +2,8 @@
 
 ## To-dos 
 
-* Divide up CardHandler. CollectionManager manages collection (InsertionManager manages insertions), MainManager manages main, Card Editor manages card changes. 
+* Manage bookmarks with cards. 
+* Divide up CardHandler. CollectionManager manages collection, InsertionManager manages insertions, MainManager manages main, Card Editor manages card changes. 
 * ID anonymity outside repo, except for card editing and deletion. 
 * Implement edit activity.
 * Voice control.
