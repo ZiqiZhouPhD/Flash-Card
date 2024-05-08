@@ -4,13 +4,11 @@ The ViewModel supplies and controls the data for a view
 
 package com.ziqiphyzhou.flashcard.card_main.presentation
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ziqiphyzhou.flashcard.card_handle.business.CardHandler
-import com.ziqiphyzhou.flashcard.shared.presentation.view_model.Event
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -32,14 +30,12 @@ class CardViewModel @Inject constructor(private val cardHandler: CardHandler) : 
     fun loadCard() {
         viewModelScope.launch {
             _viewState.postValue(CardViewState.Freeze)
-            val card = cardHandler.getTop()
-            _viewState.postValue(CardViewState.ShowTitleOnly(CardViewContent(card.title, card.body)))
-        }
-    }
-
-    fun setBookmarks(bookmarks: List<Int>) {
-        viewModelScope.launch {
-            cardHandler.initBookmarkIdList(bookmarks)
+            try {
+                val card = cardHandler.getTop()
+                _viewState.postValue(CardViewState.ShowTitleOnly(card.title, card.body))
+            } catch (e: CardHandler.Companion.CollectionEmptyException) {
+                _viewState.postValue(CardViewState.CollectionEmpty)
+            }
         }
     }
 
@@ -52,7 +48,15 @@ class CardViewModel @Inject constructor(private val cardHandler: CardHandler) : 
     }
 
     fun initView() {
-        _viewState.postValue(CardViewState.Init)
+        viewModelScope.launch {
+            try {
+                cardHandler.setupHandler()
+            } catch (e: CardHandler.Companion.CollectionMissingException) {
+                _viewState.postValue(CardViewState.CollectionMissing)
+                return@launch
+            }
+            _viewState.postValue(CardViewState.Init)
+        }
     }
 
 }

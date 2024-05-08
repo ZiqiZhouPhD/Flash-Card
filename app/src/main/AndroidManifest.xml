@@ -25,11 +25,11 @@
         <activity
             android:name=".card_add.presentation.AddActivity"
             android:exported="false"
-            android:parentActivityName=".card_main.presentation.MainActivity" />
+            android:parentActivityName=".settings_manage.presentation.SettingsActivity" />
         <activity
             android:name=".card_delete.presentation.DeleteActivity"
             android:exported="false"
-            android:parentActivityName=".card_main.presentation.MainActivity" />
+            android:parentActivityName=".settings_manage.presentation.SettingsActivity" />
         <activity
             android:name=".card_main.presentation.MainActivity"
             android:exported="true">

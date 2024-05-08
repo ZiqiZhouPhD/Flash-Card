@@ -32,37 +32,118 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:paddingLeft="12dp"
+            android:paddingRight="12dp">
+
+            <FrameLayout
+                android:id="@+id/fl_settings_show_current_set_name"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:padding="12dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Show Current Card Set Name"
+                    android:textSize="20sp"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+            </FrameLayout>
 
             <FrameLayout
                 android:id="@+id/fl_settings_open_import_export"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_gravity="center"
-                android:padding="24dp">
+                android:padding="12dp">
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Import / Export"
-                    android:textSize="24sp"
+                    android:textSize="20sp"
                     app:layout_constraintTop_toTopOf="parent" />
 
             </FrameLayout>
 
             <FrameLayout
-                android:id="@+id/fl_erase"
+                android:id="@+id/fl_delete_collection"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_gravity="center"
-                android:padding="24dp"
-                android:paddingBottom="12dp">
+                android:padding="12dp">
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Clear Database"
-                    android:textSize="24sp"
+                    android:text="Delete the Current Cardset"
+                    android:textSize="20sp"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+            </FrameLayout>
+
+            <FrameLayout
+                android:id="@+id/fl_add_collection"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:padding="12dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Create a New Card Set"
+                    android:textSize="20sp"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+            </FrameLayout>
+
+            <FrameLayout
+                android:id="@+id/fl_add_card"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:padding="12dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Add Cards to the Current Set"
+                    android:textSize="20sp"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+            </FrameLayout>
+
+            <FrameLayout
+                android:id="@+id/fl_delete_card"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:padding="12dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Delete Cards From Current Set"
+                    android:textSize="20sp"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+            </FrameLayout>
+
+            <FrameLayout
+                android:id="@+id/fl_switch_collection"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:padding="12dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Switch Card Set"
+                    android:textSize="20sp"
                     app:layout_constraintTop_toTopOf="parent" />
 
             </FrameLayout>

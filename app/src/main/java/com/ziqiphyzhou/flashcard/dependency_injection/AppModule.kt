@@ -20,6 +20,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class) // for singleton dependencies
@@ -32,7 +33,7 @@ class AppModule {
         context,
         CardDatabase::class.java,
         "card-database" // this name can be anything
-    ).createFromAsset("empty.db")
+    )
         //.fallbackToDestructiveMigration()
         .build()
 
@@ -51,6 +52,7 @@ class AppModule {
         cardRepositoryDatabase: CardRepositoryDatabase
     ): CardRepository = cardRepositoryDatabase
 
+    @Singleton
     @Provides
     fun provideCardHandler(
         cardHandlerImpl: CardHandlerImpl

@@ -6,6 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ziqiphyzhou.flashcard.card_database.data.repository.CardRepository
+import com.ziqiphyzhou.flashcard.card_handle.business.CardHandler
 import com.ziqiphyzhou.flashcard.shared.presentation.view_model.Event
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
@@ -15,9 +16,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class DeleteViewModel @Inject constructor(
-    private val repository: CardRepository
-) : ViewModel() {
+class DeleteViewModel @Inject constructor(private val cardHandler: CardHandler) : ViewModel() {
 
     private val _viewState = MutableLiveData<DeleteListViewState>()
     val viewState: LiveData<DeleteListViewState>
@@ -33,16 +32,22 @@ class DeleteViewModel @Inject constructor(
         searchString = string
         viewModelScope.launch {
             _viewState.postValue(DeleteListViewState.Loading)
-            val deleteList = repository.getAllBeginWith(searchString)
+            val deleteList = cardHandler.getAllBeginWith(searchString)
             _viewState.postValue(DeleteListViewState.Content(
-                deleteList.map { DeleteCardViewState(id = it.id, title = it.title, body = it.body) }
+                deleteList.map {
+                    DeleteCardViewState(
+                        id = it.id,
+                        title = it.title,
+                        body = it.body
+                    )
+                }
             ))
         }
     }
 
     fun deleteIconClicked(id: String, title: String) {
         viewModelScope.launch {
-            repository.delete(id)
+            cardHandler.deleteCard(id)
             _deleteCardSuccessMessage.value = Event("Card \"${title}\" deleted. ")
             loadDeleteList()
         }

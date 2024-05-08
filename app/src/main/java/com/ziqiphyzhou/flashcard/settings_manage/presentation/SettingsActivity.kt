@@ -10,12 +10,11 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.google.android.material.snackbar.Snackbar
 import com.ziqiphyzhou.flashcard.R
+import com.ziqiphyzhou.flashcard.card_add.presentation.AddActivity
 import com.ziqiphyzhou.flashcard.card_delete.presentation.DeleteActivity
-import com.ziqiphyzhou.flashcard.databinding.ActivityImportExportBinding
-import com.ziqiphyzhou.flashcard.databinding.ActivityMainBinding
 import com.ziqiphyzhou.flashcard.databinding.ActivitySettingsBinding
+import com.ziqiphyzhou.flashcard.databinding.DialogTextEditBinding
 import com.ziqiphyzhou.flashcard.import_export.presentation.ImportExportActivity
-import com.ziqiphyzhou.flashcard.import_export.presentation.ImportExportViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -46,23 +45,92 @@ class SettingsActivity : AppCompatActivity() {
             startActivity(Intent(this, ImportExportActivity::class.java))
         }
 
-        binding.flErase.setOnClickListener {
+        binding.flDeleteCollection.setOnClickListener {
+            val currentCollectionName = viewModel.getCurrentCollectionName()
             AlertDialog.Builder(this)
                 .setTitle("Warning!")
-                .setMessage("All card data will be erased!")
-                .setPositiveButton("Erase") { dialog, _ ->
+                .setMessage("You are about to permanently delete set '$currentCollectionName'. You will not be able to retrieve the data!")
+                .setPositiveButton("Delete") { dialog, _ ->
                     CoroutineScope(Dispatchers.IO).launch {
-                        if (viewModel.eraseDatabase()) {
-                            Snackbar.make(binding.root, "Database cleared", Snackbar.LENGTH_LONG).show()
-                        }
-                        else {
-                            Snackbar.make(binding.root, "Erase failed", Snackbar.LENGTH_LONG).show()
+                        if (viewModel.deleteCurrentCollection()) {
+                            Snackbar.make(
+                                binding.root,
+                                "Card set '$currentCollectionName' deleted",
+                                Snackbar.LENGTH_LONG
+                            ).show()
+                        } else {
+                            Snackbar.make(binding.root, "Deletion failed", Snackbar.LENGTH_LONG)
+                                .show()
                         }
                     }
                     dialog.dismiss()
                 }
                 .setNegativeButton("Cancel") { dialog, _ -> dialog.dismiss() }
                 .create().show()
+        }
+
+        binding.flAddCollection.setOnClickListener {
+            val dialogBinding = DialogTextEditBinding.inflate(layoutInflater)
+            AlertDialog.Builder(this)
+                .setTitle("Enter new card set name")
+                .setView(dialogBinding.root)
+                .setPositiveButton("Create") { dialog, _ ->
+                    CoroutineScope(Dispatchers.IO).launch {
+                        if (viewModel.addCollection(dialogBinding.editTextDialog.text.toString())) {
+                            Snackbar.make(
+                                binding.root,
+                                "Card set '${dialogBinding.editTextDialog.text}' created",
+                                Snackbar.LENGTH_LONG
+                            ).show()
+                        } else {
+                            Snackbar.make(binding.root, "Creation failed", Snackbar.LENGTH_LONG)
+                                .show()
+                        }
+                    }
+                    dialog.dismiss()
+                }
+                .setNegativeButton("Cancel") { dialog, _ -> dialog.dismiss() }
+                .create().show()
+        }
+
+        binding.flSwitchCollection.setOnClickListener {
+            val dialogBinding = DialogTextEditBinding.inflate(layoutInflater)
+            AlertDialog.Builder(this)
+                .setTitle("Enter new card set name")
+                .setView(dialogBinding.root)
+                .setPositiveButton("Switch") { dialog, _ ->
+                    CoroutineScope(Dispatchers.IO).launch {
+                        if (viewModel.switchCollection(dialogBinding.editTextDialog.text.toString())) {
+                            Snackbar.make(
+                                binding.root,
+                                "Switched to set '${dialogBinding.editTextDialog.text}'",
+                                Snackbar.LENGTH_LONG
+                            ).show()
+                        } else {
+                            Snackbar.make(binding.root, "Switch failed", Snackbar.LENGTH_LONG)
+                                .show()
+                        }
+                    }
+                    dialog.dismiss()
+                }
+                .setNegativeButton("Cancel") { dialog, _ -> dialog.dismiss() }
+                .create().show()
+        }
+
+        binding.flAddCard.setOnClickListener {
+            startActivity(Intent(this, AddActivity::class.java))
+        }
+
+        binding.flDeleteCard.setOnClickListener {
+            startActivity(Intent(this, DeleteActivity::class.java))
+        }
+
+        binding.flSettingsShowCurrentSetName.setOnClickListener {
+            Snackbar.make(
+                binding.root,
+                "Current set is '${viewModel.getCurrentCollectionName()}'",
+                Snackbar.LENGTH_LONG
+            ).show()
         }
 
     }

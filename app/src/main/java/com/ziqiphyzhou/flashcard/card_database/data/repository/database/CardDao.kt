@@ -21,8 +21,8 @@ interface CardDao {
 //    @JvmSuppressWildcards
 //    fun addAll(cardEntityList: List<CardEntity>)
 
-    @Query("SELECT * FROM card")
-    fun getAll(): List<CardEntity>
+    @Query("SELECT * FROM card WHERE coll = :coll")
+    fun getAll(coll: String): List<CardEntity>
 
     @Query("SELECT * FROM card WHERE id = :id")
     fun getById(id: String): CardEntity
@@ -30,8 +30,8 @@ interface CardDao {
     @Query("SELECT * FROM card WHERE previous = :id")
     fun getNextById(id: String): CardEntity
 
-    @Query("SELECT * FROM card WHERE title LIKE :title AND id != '0'")
-    fun getAllByTitle(title: String): List<CardEntity>
+    @Query("SELECT * FROM card WHERE title LIKE :title AND id NOT LIKE '@%' AND coll = :coll")
+    fun getAllByTitle(title: String, coll: String): List<CardEntity>
 
     @Update
     fun updateCard(cardEntity: CardEntity)
@@ -39,8 +39,11 @@ interface CardDao {
     @Delete
     fun deleteCard(cardEntity: CardEntity)
 
-    @Query("DELETE FROM card WHERE id != '0'")
-    fun deleteAll()
+    @Query("DELETE FROM card WHERE id NOT LIKE '@%' AND coll = :coll")
+    fun deleteAllExceptZero(coll: String)
+
+    @Query("DELETE FROM card WHERE coll = :coll")
+    fun deleteAll(coll: String)
 
     @Query("SELECT EXISTS(SELECT * FROM card WHERE id = :id)")
     fun isIdExist(id : String) : Boolean

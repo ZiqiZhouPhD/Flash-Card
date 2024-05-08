@@ -21,19 +21,26 @@ import javax.inject.Inject
 class CardRepositoryDatabase @Inject constructor(private val cardDao: CardDao) : CardRepository {
 
     // the suspended function will be run on the IO dispatcher
-    override suspend fun getTop(): Card { // return zeroCard if no other card is present
+    override suspend fun getTop(coll: String): Card { // return zeroCard if no other card is present
         return withContext(Dispatchers.IO) {
-            castEntityToCard(cardDao.getNextById("0"))
+            castEntityToCard(cardDao.getNextById("@$coll"))
         }
     }
 
     private fun castEntityToCard(entity: CardEntity): Card {
-        return Card(entity.id, entity.title, entity.body, entity.level, entity.previous, entity.state == 1)
+        return Card(
+            entity.id,
+            entity.title,
+            entity.body,
+            entity.level,
+            entity.previous,
+            entity.state == 1
+        )
     }
 
-    override suspend fun isStructureIntact(): Boolean {
+    override suspend fun isStructureIntact(coll: String): Boolean {
         return withContext(Dispatchers.IO) {
-            isStructureIntactForList(cardDao.getAll())
+            isStructureIntactForList(cardDao.getAll(coll))
         }
     }
 
@@ -41,7 +48,7 @@ class CardRepositoryDatabase @Inject constructor(private val cardDao: CardDao) :
     private fun String.md5(): String {
         val md = MessageDigest.getInstance("MD5")
         val digest = md.digest(this.toByteArray())
-        return digest.toHexString().substring(0,8)
+        return digest.toHexString().substring(0, 8)
     }
 
     private fun checkIdCollision(id: String): String {
@@ -52,9 +59,9 @@ class CardRepositoryDatabase @Inject constructor(private val cardDao: CardDao) :
         return noCollideId
     }
 
-    override suspend fun add(title: String, body: String): Boolean {
+    override suspend fun add(title: String, body: String, coll: String): Boolean {
         return withContext(Dispatchers.IO) {
-            val zeroCard = cardDao.getById("0")
+            val zeroCard = cardDao.getById("@$coll")
             val lastCard = cardDao.getById(zeroCard.previous)
             zeroCard.previous = checkIdCollision(title.md5())
             cardDao.addCard(
@@ -62,7 +69,8 @@ class CardRepositoryDatabase @Inject constructor(private val cardDao: CardDao) :
                     id = zeroCard.previous,
                     title = title,
                     body = body,
-                    previous = lastCard.id
+                    previous = lastCard.id,
+                    coll = coll
                 )
             )
             cardDao.updateCard(zeroCard)
@@ -70,22 +78,22 @@ class CardRepositoryDatabase @Inject constructor(private val cardDao: CardDao) :
         }
     }
 
-    override suspend fun getAll(): List<Card> {
+    override suspend fun getAll(coll: String): List<Card> {
         return withContext(Dispatchers.IO) {
-            cardDao.getAll().map { castEntityToCard(it) }
+            cardDao.getAll(coll).map { castEntityToCard(it) }
         }
     }
 
-    override suspend fun getAllBeginWith(substring: String): List<Card> {
+    override suspend fun getAllBeginWith(substring: String, coll: String): List<Card> {
         return withContext(Dispatchers.IO) {
-            cardDao.getAllByTitle("$substring%")
+            cardDao.getAllByTitle("$substring%", coll)
                 .sortedBy { it.title }.take(10)
                 .map { castEntityToCard(it) }
         }
     }
 
     override suspend fun delete(id: String): Boolean {
-        if (id == "0") return false
+        if (id.substring(0, 1) == "@") return false
         withContext(Dispatchers.IO) {
             val deleteCard = cardDao.getById(id)
             cardDao.deleteCard(deleteCard)
@@ -96,28 +104,29 @@ class CardRepositoryDatabase @Inject constructor(private val cardDao: CardDao) :
         return true
     }
 
-    override suspend fun findInsertionPosIds(posList: List<Int>): List<String> {
+    override suspend fun findInsertionPosIds(posList: List<Int>, coll: String): List<String> {
         // literally returning the ids of the n'th cards
         // insertions should be done after the n'th cards
         // input entries must be strictly increasing with posList[0] > 0
         // returns [topCard.id] if input invalid
-        // returns [0] if card table has only the zeroCard
-        val topCardId = cardDao.getNextById("0").id
-        if (topCardId == "0") return listOf<String>("0")
-        var previous = 0
-        for (i in posList) {
-            if (i <= previous) return listOf<String>(topCardId)
-            previous = i
-        }
+        // returns [zeroCard.id] if card table has only the zeroCard
         return withContext(Dispatchers.IO) {
+            val topCardId = cardDao.getNextById("@$coll").id
+            if (topCardId.substring(0, 1) == "@") return@withContext listOf<String>(topCardId)
+            var previous = 0
+            for (i in posList) {
+                if (i <= previous) return@withContext listOf<String>(topCardId)
+                previous = i
+            }
+
             var count = 0
-            var id = "0"
-            val idLast = cardDao.getById("0").previous
+            var id = "@$coll"
+            val idLast = cardDao.getById("@$coll").previous
             val idList = arrayListOf<String>()
             for (pos in posList) {
                 for (i in count..<pos) { // the i'th step takes count from i to i + 1
                     id = cardDao.getNextById(id).id
-                    if (id == "0") {
+                    if (id == "@$coll") {
                         idList.add(idLast) // capping the list with the last element
                         return@withContext idList.toList()
                     }
@@ -132,15 +141,15 @@ class CardRepositoryDatabase @Inject constructor(private val cardDao: CardDao) :
         }
     }
 
-    override suspend fun buryTopAfterId(buryAfterThisId: String) {
+    override suspend fun buryTopAfterId(buryAfterThisId: String, coll: String) {
         withContext(Dispatchers.IO) {
-            val topCard = cardDao.getNextById("0")
+            val topCard = cardDao.getNextById("@$coll")
             if (topCard.id != buryAfterThisId) { // table unchanged if buryAfterThisId == topCard.id
                 val secondCard = cardDao.getNextById(topCard.id)
                 val buryBeforeThisCard = cardDao.getNextById(buryAfterThisId)
 
                 topCard.previous = buryAfterThisId
-                secondCard.previous = "0"
+                secondCard.previous = "@$coll"
                 buryBeforeThisCard.previous = topCard.id
 
                 cardDao.updateCard(topCard)
@@ -150,10 +159,9 @@ class CardRepositoryDatabase @Inject constructor(private val cardDao: CardDao) :
         }
     }
 
-    override suspend fun setTopCardLevelAndState(level: Int, state: Boolean) {
+    override suspend fun setTopCardLevelAndState(level: Int, state: Boolean, coll: String) {
         withContext(Dispatchers.IO) {
-            val topCard = cardDao.getNextById("0")
-            if (topCard.id == "0") return@withContext
+            val topCard = cardDao.getNextById("@$coll")
             topCard.state = state.compareTo(false)
             topCard.level = level
             if (topCard.level < 0) topCard.level = 0
@@ -168,11 +176,11 @@ class CardRepositoryDatabase @Inject constructor(private val cardDao: CardDao) :
         }
     }
 
-    override suspend fun importDatabase(importList: List<Card>): Boolean {
+    override suspend fun importCollection(importList: List<Card>, coll: String): Boolean {
         return withContext(Dispatchers.IO) {
-            val erasedList = cardDao.getAll()
+            val erasedList = cardDao.getAll(coll)
             val importIdList = importList.map { it.id }
-            if ("0" !in importIdList) return@withContext false
+            if ("@$coll" !in importIdList) return@withContext false
 
             try {
                 CoroutineScope(Dispatchers.IO).launch {
@@ -183,27 +191,69 @@ class CardRepositoryDatabase @Inject constructor(private val cardDao: CardDao) :
                     }
                 }
                 cardDao.upsertAll(importList.map {
-                    CardEntity(it.id, it.title, it.body, it.level, it.previous)
+                    CardEntity(
+                        it.id,
+                        it.title,
+                        it.body,
+                        it.level,
+                        it.previous,
+                        if (it.state) 1 else 0,
+                        coll
+                    )
                 })
             } catch (e: Exception) {
-                restoreDatabase(erasedList)
+                restoreCollection(erasedList, coll)
                 return@withContext false
             }
-            if (!isStructureIntact()) {
-                restoreDatabase(erasedList)
+            if (!isStructureIntact(coll)) {
+                restoreCollection(erasedList, coll)
                 return@withContext false
             }
             true
         }
     }
 
-    override suspend fun clearDatabase(): Boolean {
-        return importDatabase(listOf<Card>(castEntityToCard(cardDao.getById("0"))))
+    override suspend fun clearCollection(coll: String): Boolean {
+        return importCollection(listOf<Card>(castEntityToCard(cardDao.getById("@$coll"))), coll)
     }
 
-    private suspend fun restoreDatabase(cardList: List<CardEntity>) {
+    override suspend fun createCollection(coll: String): Boolean {
+        return withContext(Dispatchers.IO) {
+            if (cardDao.isIdExist("@$coll")) false
+            else {
+                cardDao.addCard(createZeroCard(coll))
+                true
+            }
+        }
+    }
+
+    override suspend fun deleteCollection(coll: String): Boolean {
+        return withContext(Dispatchers.IO) {
+            cardDao.deleteAll(coll)
+            true
+        }
+    }
+
+    override suspend fun isCollectionExist(coll: String?): Boolean {
+        return if (coll == null) false
+        else withContext(Dispatchers.IO) {
+            cardDao.isIdExist("@$coll")
+        }
+    }
+
+    override suspend fun addCollection(coll: String): Boolean {
+        return withContext(Dispatchers.IO) {
+            if (cardDao.isIdExist("@$coll")) false
+            else {
+                cardDao.addCard(CardEntity("@$coll", "null", "null", 0, "@$coll", 1, coll))
+                true
+            }
+        }
+    }
+
+    private suspend fun restoreCollection(cardList: List<CardEntity>, coll: String) {
         withContext(Dispatchers.IO) {
-            cardDao.deleteAll()
+            cardDao.deleteAllExceptZero(coll)
             cardDao.upsertAll(cardList)
         }
     }
@@ -213,16 +263,18 @@ class CardRepositoryDatabase @Inject constructor(private val cardDao: CardDao) :
         val cardListSize = allCards.size
         if (cardListSize == 0) return false
         if (cardListSize == 1) {
-            return (allCards[0].id == "0" && allCards[0].previous == "0")
+            return (allCards[0].id.substring(0, 1) == "@" && allCards[0].previous.substring(
+                0,
+                1
+            ) == "@")
         }
-
         var isZeroCardExist = false
         val lastCard = allCards.last()
         val linkFromSet = mutableSetOf<String>() // has link pointing from it
         val linkToSet = mutableSetOf<String>() // has link pointing to it
         for (cardEntity in allCards) {
             if (cardEntity.title == "") return false
-            if (cardEntity.id == "0") isZeroCardExist = true
+            if (cardEntity.id.substring(0, 1) == "@") isZeroCardExist = true
             if (cardEntity.previous in linkToSet || cardEntity.id in linkFromSet) {
                 return false
             } else {
@@ -247,6 +299,11 @@ class CardRepositoryDatabase @Inject constructor(private val cardDao: CardDao) :
             }
         }
         return false
+    }
+
+    companion object {
+        private fun createZeroCard(coll: String) =
+            CardEntity("@$coll", "null", "null", 0, "@$coll", 1, coll)
     }
 
 }

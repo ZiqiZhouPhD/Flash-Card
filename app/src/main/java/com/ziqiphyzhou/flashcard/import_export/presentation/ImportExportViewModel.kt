@@ -15,6 +15,7 @@ import com.google.gson.reflect.TypeToken
 import com.ziqiphyzhou.flashcard.card_database.data.repository.CardRepository
 import com.ziqiphyzhou.flashcard.card_database.data.repository.database.CardEntity
 import com.ziqiphyzhou.flashcard.card_handle.business.Card
+import com.ziqiphyzhou.flashcard.card_handle.business.CardHandler
 import com.ziqiphyzhou.flashcard.shared.presentation.view_model.Event
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -25,14 +26,15 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ImportExportViewModel @Inject constructor(
-    private val repository: CardRepository
+    private val repository: CardRepository,
+    private val cardHandler: CardHandler
 ) : ViewModel() {
 
     private val gson = Gson()
 
     suspend fun getDatabaseJson(): String {
         return withContext(Dispatchers.IO) {
-            gson.toJson(repository.getAll())
+            gson.toJson(repository.getAll(cardHandler.getCollectionName()))
         }
     }
 
@@ -41,7 +43,7 @@ class ImportExportViewModel @Inject constructor(
             try {
                 val typeToken = object : TypeToken<List<Card>>() {}.type
                 val cardList = Gson().fromJson<List<Card>>(stringJson, typeToken)
-                if (!repository.importDatabase(cardList)) {return@withContext false }
+                if (!repository.importCollection(cardList,cardHandler.getCollectionName())) {return@withContext false }
             } catch (e: Exception) { return@withContext false }
             true
         }

@@ -10,9 +10,8 @@ package com.ziqiphyzhou.flashcard.card_main.presentation
 // sealed classes are used to keep status
 sealed class CardViewState{
     data object Init: CardViewState()
-    data class ShowTitleOnly(val content: CardViewContent): CardViewState()
+    data class ShowTitleOnly(val title: String, val body: String): CardViewState()
     data object Freeze: CardViewState()
+    data object CollectionEmpty: CardViewState()
+    data object CollectionMissing: CardViewState()
 }
-
-// store data to present for a view in a data class
-data class CardViewContent(val title: String, val body: String)

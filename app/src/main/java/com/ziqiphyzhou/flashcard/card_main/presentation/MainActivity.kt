@@ -42,15 +42,12 @@ import java.util.Locale
 class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
 
     private lateinit var binding: ActivityMainBinding
-    private var isFrozen = true
-    private var isInit = true
-    private var cardBodyText = ""
+    private var cardBodyText: String? = null
     private val viewModel: CardViewModel by viewModels()
-    private val sharedPref by lazy { PreferenceManager.getDefaultSharedPreferences(this) }
-    private val gson = Gson()
     private lateinit var textToSpeech: TextToSpeech
-    private var voiceMode = false
+    private var voiceMode = false // redundant
     private var mediaButtonState = true
+    private lateinit var viewState : CardViewState
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -67,7 +64,7 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
             checkLanguageAvailability(listOf(Companion.LANGUAGE_PRIMARY, Companion.LANGUAGE_CARD))
         }
 
-        viewModel.viewState.observe(this) { viewState -> updateUi(viewState) }
+        viewModel.viewState.observe(this) { viewState = it; updateUi(it) }
         viewModel.initView()
 
         binding.fab.setOnClickListener { showMenu(it) }
@@ -79,14 +76,14 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
         binding.btnForgot.setOnClickListener { viewModel.buryCard(false) }
 
         binding.main.setOnClickListener {
-            if (isInit) viewModel.loadCard()
-            else showCardBody()
+            if (viewState is CardViewState.Init) viewModel.loadCard()
+            else if (viewState is CardViewState.ShowTitleOnly) showCardBody()
         }
 
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        if (!voiceMode) return super.onKeyDown(keyCode, event)
+        if (!voiceMode || viewState !is CardViewState.ShowTitleOnly) return super.onKeyDown(keyCode, event)
         when (keyCode) {
             KeyEvent.KEYCODE_MEDIA_NEXT -> { // push mediaButtonState to buryCard
                 viewModel.buryCard(mediaButtonState)
@@ -97,8 +94,7 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
             KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE -> {
                 mediaButtonState = false // forgotten
                 textToSpeech.setLanguage(Companion.LANGUAGE_PRIMARY)
-                val speakText = cardBodyText
-                textToSpeech.speak(cardBodyText.substringBefore("("), TextToSpeech.QUEUE_FLUSH, null, null)
+                textToSpeech.speak(cardBodyText?.substringBefore("("), TextToSpeech.QUEUE_FLUSH, null, null)
                 return true
             }
 
@@ -114,7 +110,7 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
     }
 
     private fun showCardBody() {
-        if (!isFrozen) {
+        if (viewState !is CardViewState.Freeze) {
             binding.tvBody.text = cardBodyText
             binding.cvBody.visibility = View.VISIBLE
         }
@@ -140,16 +136,6 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
         viewModel.initView()
     }
 
-    private fun setBookmarksToSharedPreferencesAndViewModel() {
-        // get bookmarks from shared preferences, initialize shared preferences if does not exist
-        val bookmarksJson =
-            sharedPref.getString(BOOKMARKS_SHAREDPREF_KEY, null) ?: BOOKMARKS_JSON_DEFAULT
-        CoroutineScope(Dispatchers.Main).launch {
-            viewModel.setBookmarks(gson.fromJson(bookmarksJson, Array<Int>::class.java).toList())
-        }
-        sharedPref.edit { putString(BOOKMARKS_SHAREDPREF_KEY, bookmarksJson) }
-    }
-
     private fun updateUi(viewState: CardViewState) {
 
         fun setTextBlur(filter: BlurMaskFilter?) {
@@ -157,48 +143,38 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
             binding.tvBody.paint.setMaskFilter(filter)
         }
 
-        fun loadCardDataToViewShowTitleOnly(content: CardViewContent) {
-            cardBodyText = content.body
-            binding.tvTitle.text = content.title
-            binding.tvBody.text = ""
-        }
-
         fun setButtonEnabled(isEnabled: Boolean) {
             binding.btnRemember.isEnabled = isEnabled
             binding.btnForgot.isEnabled = isEnabled
         }
 
+        fun setToDisplayOnly(displayText: String) {
+            binding.tvTitle.text = displayText
+            binding.tvBody.text = null
+            binding.cvBody.visibility = View.GONE
+            setTextBlur(null)
+            setButtonEnabled(false)
+        }
+
         when (viewState) {
             is CardViewState.ShowTitleOnly -> {
-                isInit = false
-                isFrozen = false
-                binding.cvBody.visibility = View.GONE
-                setTextBlur(null)
-                loadCardDataToViewShowTitleOnly(viewState.content)
+                setToDisplayOnly(viewState.title)
+                cardBodyText = viewState.body
                 setButtonEnabled(true)
                 if (voiceMode) {
-                    textToSpeech.setLanguage(Companion.LANGUAGE_CARD)
+                    textToSpeech.setLanguage(LANGUAGE_CARD)
                     textToSpeech.speak(binding.tvTitle.text, TextToSpeech.QUEUE_FLUSH, null, null)
                 }
             }
 
             CardViewState.Freeze -> {
-                isInit = false
-                isFrozen = true
                 setTextBlur(BlurMaskFilter(8f, BlurMaskFilter.Blur.NORMAL))
                 setButtonEnabled(false)
             }
 
-            CardViewState.Init -> {
-                binding.tvTitle.text = "Tap to Start"
-                binding.tvBody.text = ""
-                isInit = true
-                isFrozen = true
-                binding.cvBody.visibility = View.GONE
-                setTextBlur(null)
-                setButtonEnabled(false)
-                setBookmarksToSharedPreferencesAndViewModel()
-            }
+            CardViewState.Init -> setToDisplayOnly("Tap to start")
+            CardViewState.CollectionEmpty -> setToDisplayOnly("Set empty, add cards to start")
+            CardViewState.CollectionMissing -> setToDisplayOnly("Switch or add a card set to start")
         }
     }
 

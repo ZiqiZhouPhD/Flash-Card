@@ -7,15 +7,14 @@ import androidx.lifecycle.viewModelScope
 import com.ziqiphyzhou.flashcard.card_database.data.repository.CardRepository
 import com.ziqiphyzhou.flashcard.card_delete.presentation.DeleteCardViewState
 import com.ziqiphyzhou.flashcard.card_delete.presentation.DeleteListViewState
+import com.ziqiphyzhou.flashcard.card_handle.business.CardHandler
 import com.ziqiphyzhou.flashcard.shared.presentation.view_model.Event
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class AddViewModel @Inject constructor(
-    private val repository: CardRepository
-) : ViewModel() {
+class AddViewModel @Inject constructor(private val cardHandler: CardHandler) : ViewModel() {
 
     private val _addCardSuccessMessage = MutableLiveData<Event<String>>()
     val addCardSuccessMessage: LiveData<Event<String>>
@@ -24,8 +23,8 @@ class AddViewModel @Inject constructor(
     fun add(title: String, body: String) {
         viewModelScope.launch {
             val saveTitle = title.takeIf { it != "" } ?: "null"
-            repository.add(saveTitle, body)
-            _addCardSuccessMessage.value = Event("Card \"${saveTitle}\" added. ")
+            if (cardHandler.addCard(saveTitle, body)) _addCardSuccessMessage.value = Event("Card \"${saveTitle}\" added. ")
+            else _addCardSuccessMessage.value = Event("Failed to add")
         }
     }
 }
