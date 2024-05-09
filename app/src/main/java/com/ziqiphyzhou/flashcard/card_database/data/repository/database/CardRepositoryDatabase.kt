@@ -5,7 +5,7 @@ The repo belongs to the repo layer.
 package com.ziqiphyzhou.flashcard.card_database.data.repository.database
 
 import com.ziqiphyzhou.flashcard.card_database.data.repository.CardRepository
-import com.ziqiphyzhou.flashcard.card_handle.business.Card
+import com.ziqiphyzhou.flashcard.shared.business.Card
 import com.ziqiphyzhou.flashcard.shared.LEVEL_CAP
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -175,10 +175,12 @@ class CardRepositoryDatabase @Inject constructor(private val cardDao: CardDao) :
         }
     }
 
-    override suspend fun importCollection(importList: List<Card>, coll: String): Boolean {
+    override suspend fun importCollection(importList: List<Card>): Boolean {
         return withContext(Dispatchers.IO) {
-            val erasedList = cardDao.getAll(coll)
+            if (importList.isEmpty()) return@withContext false
             val importIdList = importList.map { it.id }
+            val coll = importIdList[0].substringAfter("@")
+            val erasedList = cardDao.getAll(coll)
             if ("@$coll" !in importIdList) return@withContext false
             for (id in importIdList) {
                 if (!id.endsWith("@$coll")) return@withContext false
@@ -215,8 +217,8 @@ class CardRepositoryDatabase @Inject constructor(private val cardDao: CardDao) :
         }
     }
 
-    override suspend fun clearCollection(coll: String): Boolean {
-        return importCollection(listOf<Card>(castEntityToCard(cardDao.getById("@$coll"))), coll)
+    override suspend fun emptyCollection(coll: String): Boolean {
+        return importCollection(listOf<Card>(castEntityToCard(cardDao.getById("@$coll"))))
     }
 
     override suspend fun deleteCollection(coll: String): Boolean {

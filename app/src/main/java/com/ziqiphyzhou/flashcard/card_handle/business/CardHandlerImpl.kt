@@ -1,28 +1,28 @@
 package com.ziqiphyzhou.flashcard.card_handle.business
 
-import android.util.Log
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import com.google.gson.Gson
 import com.ziqiphyzhou.flashcard.AppApplication
 import com.ziqiphyzhou.flashcard.card_database.data.repository.CardRepository
-import com.ziqiphyzhou.flashcard.card_main.presentation.CardViewState
 import com.ziqiphyzhou.flashcard.shared.BOOKMARKS_JSON_DEFAULT
 import com.ziqiphyzhou.flashcard.shared.BOOKMARKS_SHAREDPREF_KEY
-import com.ziqiphyzhou.flashcard.shared.COLLECTION_SHAREDPREF_KEY
 import com.ziqiphyzhou.flashcard.shared.LEVEL_CAP
+import com.ziqiphyzhou.flashcard.shared.business.Card
+import com.ziqiphyzhou.flashcard.shared.business.CurrentCollection
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-class CardHandlerImpl @Inject constructor(private val repository: CardRepository) : CardHandler {
+class CardHandlerImpl @Inject constructor(
+    private val repository: CardRepository,
+    private val curColl: CurrentCollection
+) : CardHandler {
 
     private val sharedPref =
         PreferenceManager.getDefaultSharedPreferences(AppApplication.INSTANCE.applicationContext)
-
-    private var coll: String? = null // valid coll cannot be empty
 
     // ids of insertion positions labeled by levels
     // needs refresh whenever card table is updated
@@ -32,31 +32,30 @@ class CardHandlerImpl @Inject constructor(private val repository: CardRepository
 
     override suspend fun getTop(): Card {
         return withContext(Dispatchers.IO) {
-            if (!repository.isCollectionExist(coll)) throw CardHandler.Companion.CollectionMissingException()
-            else {
-                val topCard = repository.getTop(coll!!)
+            curColl.get()?.let {coll ->
+                val topCard = repository.getTop(coll)
                 if (topCard.id.substring(0, 1) == "@") throw CardHandler.Companion.CollectionEmptyException()
-                topCard
-            }
+                return@let topCard
+            } ?: throw CardHandler.Companion.CollectionMissingException()
         }
+
     }
 
     private suspend fun initBookmarkIdList(insertPosList: List<Int>) {
-        return withContext(Dispatchers.IO) {
-            if (!repository.isCollectionExist(coll)) throw CardHandler.Companion.CollectionMissingException()
-            else {
+        withContext(Dispatchers.IO) {
+            curColl.get()?.let {coll ->
                 bookmarkList.clear()
-                bookmarkList.addAll(repository.findInsertionPosIds(insertPosList, coll!!))
-            }
+                bookmarkList.addAll(repository.findInsertionPosIds(insertPosList, coll))
+            } ?: throw CardHandler.Companion.CollectionMissingException()
         }
     }
 
     override suspend fun getAllBeginWith(substring: String): List<Card> {
+        if (substring == "") return emptyList() // empty title not allowed
         return withContext(Dispatchers.IO) {
-            if (substring != "") { // empty title not allowed
-                if (!repository.isCollectionExist(coll)) throw CardHandler.Companion.CollectionMissingException()
-                else repository.getAllBeginWith(substring, coll!!)
-            } else listOf()
+            curColl.get()?.let { coll ->
+                repository.getAllBeginWith(substring, coll)
+            } ?: throw CardHandler.Companion.CollectionMissingException()
         }
     }
 
@@ -66,9 +65,8 @@ class CardHandlerImpl @Inject constructor(private val repository: CardRepository
 
     override suspend fun buryCard(isRemembered: Boolean) {
         return withContext(Dispatchers.IO) {
-            if (!repository.isCollectionExist(coll)) throw CardHandler.Companion.CollectionMissingException()
-            else {
-                val topCard = repository.getTop(coll!!)
+            curColl.get()?.let { coll ->
+                val topCard = repository.getTop(coll)
                 if (topCard.id.substring(0, 1) == "@") return@withContext
 
                 when (isRemembered) {
@@ -88,7 +86,7 @@ class CardHandlerImpl @Inject constructor(private val repository: CardRepository
                 if (topCard.level < 0) topCard.level = 0
                 else if (topCard.level > LEVEL_CAP) topCard.level = LEVEL_CAP
 
-                repository.setTopCardLevelAndState(topCard.level, topCard.state, coll!!)
+                repository.setTopCardLevelAndState(topCard.level, topCard.state, coll)
 
                 var buryLevel = 0 // if forgot
                 if (isRemembered) {
@@ -98,8 +96,8 @@ class CardHandlerImpl @Inject constructor(private val repository: CardRepository
 
                 updateBookmarksBeforeBury(topCard.id, buryLevel)
 
-                repository.buryTopAfterId(insertAfterThisId, coll!!)
-            }
+                repository.buryTopAfterId(insertAfterThisId, coll)
+            } ?: throw CardHandler.Companion.CollectionMissingException()
 
         }
     }
@@ -112,15 +110,13 @@ class CardHandlerImpl @Inject constructor(private val repository: CardRepository
     }
 
     override suspend fun setupHandler() {
-        setupHandler(sharedPref.getString(COLLECTION_SHAREDPREF_KEY, null))
+        curColl.set()
+        setupHandler(curColl.get())
     }
 
     override suspend fun setupHandler(coll: String?) {
-        if (!repository.isCollectionExist(coll)) throw CardHandler.Companion.CollectionMissingException()
-        else {
-            this.coll = coll
-            sharedPref.edit { putString(COLLECTION_SHAREDPREF_KEY, coll) }
-
+        if (!curColl.set(coll)) throw CardHandler.Companion.CollectionMissingException()
+        else curColl.get()?.let {
             // get bookmarks from shared preferences, initialize shared preferences if does not exist
             val bookmarksJson =
                 sharedPref.getString(BOOKMARKS_SHAREDPREF_KEY, null) ?: BOOKMARKS_JSON_DEFAULT
@@ -128,17 +124,17 @@ class CardHandlerImpl @Inject constructor(private val repository: CardRepository
                 initBookmarkIdList(gson.fromJson(bookmarksJson, Array<Int>::class.java).toList())
             }
             sharedPref.edit { putString(BOOKMARKS_SHAREDPREF_KEY, bookmarksJson) }
-        }
+        } ?: throw CardHandler.Companion.CollectionMissingException()
     }
 
     override fun getCollectionName(): String {
-        return coll.toString()
+        return curColl.get().toString()
     }
 
     override suspend fun deleteCollection(): Boolean {
-        return if (!repository.isCollectionExist(coll)) false
+        return if (!repository.isCollectionExist(curColl.get())) false
         else {
-            repository.deleteCollection(coll!!)
+            repository.deleteCollection(curColl.get()!!)
             true
         }
     }
@@ -148,9 +144,9 @@ class CardHandlerImpl @Inject constructor(private val repository: CardRepository
     }
 
     override suspend fun addCard(title: String, body: String): Boolean {
-        return if (!repository.isCollectionExist(coll)) false
+        return if (!repository.isCollectionExist(curColl.get())) false
         else {
-            repository.add(title, body, coll!!)
+            repository.add(title, body, curColl.get()!!)
             true
         }
     }

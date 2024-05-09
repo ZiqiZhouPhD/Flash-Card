@@ -7,6 +7,7 @@ package com.ziqiphyzhou.flashcard.card_main.presentation
 
 import android.content.Intent
 import android.graphics.BlurMaskFilter
+import android.opengl.Visibility
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
 import android.util.Log
@@ -73,7 +74,10 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
 
         binding.btnRemember.setOnClickListener { viewModel.buryCard(true) }
 
-        binding.btnForgot.setOnClickListener { viewModel.buryCard(false) }
+        binding.btnForgot.setOnClickListener {
+            if (binding.cvBody.visibility == View.GONE) showCardBody()
+            else viewModel.buryCard(false)
+        }
 
         binding.main.setOnClickListener {
             if (viewState is CardViewState.Init) viewModel.loadCard()
@@ -113,6 +117,7 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
         if (viewState !is CardViewState.Freeze) {
             binding.tvBody.text = cardBodyText
             binding.cvBody.visibility = View.VISIBLE
+            binding.btnForgot.text = resources.getString(R.string.btn_forget)
         }
     }
 
@@ -160,6 +165,7 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
             is CardViewState.ShowTitleOnly -> {
                 setToDisplayOnly(viewState.title)
                 cardBodyText = viewState.body
+                binding.btnForgot.text = resources.getString(R.string.btn_hesitate)
                 setButtonEnabled(true)
                 if (voiceMode) {
                     textToSpeech.setLanguage(LANGUAGE_CARD)

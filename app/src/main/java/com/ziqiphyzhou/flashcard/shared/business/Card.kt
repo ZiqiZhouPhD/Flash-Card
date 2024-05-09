@@ -1,4 +1,4 @@
-package com.ziqiphyzhou.flashcard.card_handle.business
+package com.ziqiphyzhou.flashcard.shared.business
 
 data class Card(
     val id: String,

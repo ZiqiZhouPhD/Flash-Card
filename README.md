@@ -2,13 +2,16 @@
 
 ## To-dos 
 
-* Manage bookmarks with cards. 
-* Divide up CardHandler. CollectionManager manages collection, InsertionManager manages insertions, MainManager manages main, Card Editor manages card changes. 
+* Delete "coll" attribute. Recognize and switch to "coll" when importing. Reset when deleting. 
+* Hide "@coll" during import/export. Format to "{\"coll\":[]}". 
+* Divide up CardHandler. CollectionManager manages collections, InsertionManager manages insertions and MainManager manages main together, Card Editor manages card changes. 
 * ID anonymity outside repo, except for card editing and deletion. 
-* Implement edit activity.
+* Implement edit card activity.
 * Voice control.
 * Daily count.
 * Setup themes. 
-* Implement edit behaviors. 
+* Implement edit bookmark behaviors. 
 * Change icon (get svg first). 
 * Keep activity while screen locked. 
+* Set language and voice (collection-specific setting marked on zeroCard title). 
+* Manage behaviors (app-wide setting)

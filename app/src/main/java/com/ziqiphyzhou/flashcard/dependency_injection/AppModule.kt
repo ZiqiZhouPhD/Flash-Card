@@ -15,6 +15,7 @@ import com.ziqiphyzhou.flashcard.card_database.data.repository.database.CardDao
 import com.ziqiphyzhou.flashcard.card_database.data.repository.database.CardDatabase
 import com.ziqiphyzhou.flashcard.card_handle.business.CardHandler
 import com.ziqiphyzhou.flashcard.card_handle.business.CardHandlerImpl
+import com.ziqiphyzhou.flashcard.shared.business.CurrentCollection
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -57,5 +58,11 @@ class AppModule {
     fun provideCardHandler(
         cardHandlerImpl: CardHandlerImpl
     ): CardHandler = cardHandlerImpl
+
+    @Singleton
+    @Provides
+    fun provideCurrentCollection(
+        repository: CardRepository
+    ): CurrentCollection = CurrentCollection(repository)
 
 }

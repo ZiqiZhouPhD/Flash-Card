@@ -1,5 +1,7 @@
 package com.ziqiphyzhou.flashcard.card_handle.business
 
+import com.ziqiphyzhou.flashcard.shared.business.Card
+
 interface CardHandler {
 
     suspend fun getTop(): Card // main

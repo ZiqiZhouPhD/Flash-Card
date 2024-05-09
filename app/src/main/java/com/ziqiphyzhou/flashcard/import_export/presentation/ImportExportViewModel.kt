@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.ziqiphyzhou.flashcard.card_database.data.repository.CardRepository
-import com.ziqiphyzhou.flashcard.card_handle.business.Card
+import com.ziqiphyzhou.flashcard.shared.business.Card
 import com.ziqiphyzhou.flashcard.card_handle.business.CardHandler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -30,7 +30,7 @@ class ImportExportViewModel @Inject constructor(
             try {
                 val typeToken = object : TypeToken<List<Card>>() {}.type
                 val cardList = Gson().fromJson<List<Card>>(stringJson, typeToken)
-                if (!repository.importCollection(cardList,cardHandler.getCollectionName())) {return@withContext false }
+                if (!repository.importCollection(cardList)) {return@withContext false }
             } catch (e: Exception) { return@withContext false }
             true
         }
