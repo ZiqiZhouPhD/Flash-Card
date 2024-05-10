@@ -1,5 +1,6 @@
-package com.ziqiphyzhou.flashcard.card_handle.business
+package com.ziqiphyzhou.flashcard.card_main.business
 
+import android.util.Log
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import com.google.gson.Gson
@@ -9,17 +10,17 @@ import com.ziqiphyzhou.flashcard.shared.BOOKMARKS_JSON_DEFAULT
 import com.ziqiphyzhou.flashcard.shared.BOOKMARKS_SHAREDPREF_KEY
 import com.ziqiphyzhou.flashcard.shared.LEVEL_CAP
 import com.ziqiphyzhou.flashcard.shared.business.Card
-import com.ziqiphyzhou.flashcard.shared.business.CurrentCollection
+import com.ziqiphyzhou.flashcard.shared.business.CurrentCollectionManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-class CardHandlerImpl @Inject constructor(
+class CardDealerImpl @Inject constructor(
     private val repository: CardRepository,
-    private val curColl: CurrentCollection
-) : CardHandler {
+    private val curColl: CurrentCollectionManager
+) : CardDealer {
 
     private val sharedPref =
         PreferenceManager.getDefaultSharedPreferences(AppApplication.INSTANCE.applicationContext)
@@ -32,30 +33,25 @@ class CardHandlerImpl @Inject constructor(
 
     override suspend fun getTop(): Card {
         return withContext(Dispatchers.IO) {
-            curColl.get()?.let {coll ->
+            curColl.get()?.let { coll ->
                 val topCard = repository.getTop(coll)
-                if (topCard.id.substring(0, 1) == "@") throw CardHandler.Companion.CollectionEmptyException()
+                if (topCard.id.substring(
+                        0,
+                        1
+                    ) == "@"
+                ) throw CardDealer.Companion.CollectionEmptyException()
                 return@let topCard
-            } ?: throw CardHandler.Companion.CollectionMissingException()
+            } ?: throw CardDealer.Companion.CollectionMissingException()
         }
 
     }
 
     private suspend fun initBookmarkIdList(insertPosList: List<Int>) {
         withContext(Dispatchers.IO) {
-            curColl.get()?.let {coll ->
+            curColl.get()?.let { coll ->
                 bookmarkList.clear()
                 bookmarkList.addAll(repository.findInsertionPosIds(insertPosList, coll))
-            } ?: throw CardHandler.Companion.CollectionMissingException()
-        }
-    }
-
-    override suspend fun getAllBeginWith(substring: String): List<Card> {
-        if (substring == "") return emptyList() // empty title not allowed
-        return withContext(Dispatchers.IO) {
-            curColl.get()?.let { coll ->
-                repository.getAllBeginWith(substring, coll)
-            } ?: throw CardHandler.Companion.CollectionMissingException()
+            } ?: throw CardDealer.Companion.CollectionMissingException()
         }
     }
 
@@ -66,8 +62,9 @@ class CardHandlerImpl @Inject constructor(
     override suspend fun buryCard(isRemembered: Boolean) {
         return withContext(Dispatchers.IO) {
             curColl.get()?.let { coll ->
+
                 val topCard = repository.getTop(coll)
-                if (topCard.id.substring(0, 1) == "@") return@withContext
+                if (topCard.id == "") return@withContext
 
                 when (isRemembered) {
                     true -> {
@@ -94,29 +91,23 @@ class CardHandlerImpl @Inject constructor(
                 }
                 val insertAfterThisId = bookmarkList[buryLevel]
 
-                updateBookmarksBeforeBury(topCard.id, buryLevel)
+                updateBookmarksBeforeBury(topCard.id, buryLevel, coll)
 
                 repository.buryTopAfterId(insertAfterThisId, coll)
-            } ?: throw CardHandler.Companion.CollectionMissingException()
+            } ?: throw CardDealer.Companion.CollectionMissingException()
 
         }
     }
 
-    private suspend fun updateBookmarksBeforeBury(topCardId: String, buryLevel: Int) {
+    private suspend fun updateBookmarksBeforeBury(topCardId: String, buryLevel: Int, coll: String) {
         for (level in 0..<buryLevel) {
-            bookmarkList[level] = repository.getNextIdById(bookmarkList[level])
+            bookmarkList[level] = repository.getNextIdById(bookmarkList[level], coll)
         }
         bookmarkList[buryLevel] = topCardId
     }
 
-    override suspend fun setupHandler() {
-        curColl.set()
-        setupHandler(curColl.get())
-    }
-
-    override suspend fun setupHandler(coll: String?) {
-        if (!curColl.set(coll)) throw CardHandler.Companion.CollectionMissingException()
-        else curColl.get()?.let {
+    override suspend fun setupDealer() {
+        curColl.get()?.let {
             // get bookmarks from shared preferences, initialize shared preferences if does not exist
             val bookmarksJson =
                 sharedPref.getString(BOOKMARKS_SHAREDPREF_KEY, null) ?: BOOKMARKS_JSON_DEFAULT
@@ -124,35 +115,7 @@ class CardHandlerImpl @Inject constructor(
                 initBookmarkIdList(gson.fromJson(bookmarksJson, Array<Int>::class.java).toList())
             }
             sharedPref.edit { putString(BOOKMARKS_SHAREDPREF_KEY, bookmarksJson) }
-        } ?: throw CardHandler.Companion.CollectionMissingException()
-    }
-
-    override fun getCollectionName(): String {
-        return curColl.get().toString()
-    }
-
-    override suspend fun deleteCollection(): Boolean {
-        return if (!repository.isCollectionExist(curColl.get())) false
-        else {
-            repository.deleteCollection(curColl.get()!!)
-            true
-        }
-    }
-
-    override suspend fun addCollection(coll: String): Boolean {
-        return repository.addCollection(coll)
-    }
-
-    override suspend fun addCard(title: String, body: String): Boolean {
-        return if (!repository.isCollectionExist(curColl.get())) false
-        else {
-            repository.add(title, body, curColl.get()!!)
-            true
-        }
-    }
-
-    override suspend fun deleteCard(id: String) {
-        repository.delete(id)
+        } ?: throw CardDealer.Companion.CollectionMissingException()
     }
 
 }

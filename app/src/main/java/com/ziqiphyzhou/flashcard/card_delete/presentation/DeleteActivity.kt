@@ -37,7 +37,7 @@ class DeleteActivity : AppCompatActivity() {
             this@DeleteActivity.onBackPressedDispatcher.onBackPressed()
         }
 
-        viewModel.deleteCardSuccessMessage.observe(this) { event ->
+        viewModel.deleteCardMessage.observe(this) { event ->
             event.getContentIfNotHandled()?.let {
                 binding.editTextSearchForDelete.text.clear()
                 val inputMethodManager = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager

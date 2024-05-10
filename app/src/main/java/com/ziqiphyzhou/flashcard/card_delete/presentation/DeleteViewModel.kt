@@ -1,30 +1,25 @@
 package com.ziqiphyzhou.flashcard.card_delete.presentation
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ziqiphyzhou.flashcard.card_database.data.repository.CardRepository
-import com.ziqiphyzhou.flashcard.card_handle.business.CardHandler
+import com.ziqiphyzhou.flashcard.card_edit.business.CardEditor
 import com.ziqiphyzhou.flashcard.shared.presentation.view_model.Event
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class DeleteViewModel @Inject constructor(private val cardHandler: CardHandler) : ViewModel() {
+class DeleteViewModel @Inject constructor(private val cardEditor: CardEditor) : ViewModel() {
 
     private val _viewState = MutableLiveData<DeleteListViewState>()
     val viewState: LiveData<DeleteListViewState>
         get() = _viewState
 
-    private val _deleteCardSuccessMessage = MutableLiveData<Event<String>>()
-    val deleteCardSuccessMessage: LiveData<Event<String>>
-        get() = _deleteCardSuccessMessage
+    private val _deleteCardMessage = MutableLiveData<Event<String>>()
+    val deleteCardMessage: LiveData<Event<String>>
+        get() = _deleteCardMessage
 
     private var searchString = String()
 
@@ -32,7 +27,7 @@ class DeleteViewModel @Inject constructor(private val cardHandler: CardHandler) 
         searchString = string
         viewModelScope.launch {
             _viewState.postValue(DeleteListViewState.Loading)
-            val deleteList = cardHandler.getAllBeginWith(searchString)
+            val deleteList = cardEditor.getAllBeginWith(searchString)
             _viewState.postValue(DeleteListViewState.Content(
                 deleteList.map {
                     DeleteCardViewState(
@@ -47,8 +42,9 @@ class DeleteViewModel @Inject constructor(private val cardHandler: CardHandler) 
 
     fun deleteIconClicked(id: String, title: String) {
         viewModelScope.launch {
-            cardHandler.deleteCard(id)
-            _deleteCardSuccessMessage.value = Event("Card \"${title}\" deleted. ")
+            _deleteCardMessage.value = Event(
+                if (cardEditor.deleteCard(id)) "Card \"${title}\" deleted. " else "Deletion failed"
+            )
             loadDeleteList()
         }
     }

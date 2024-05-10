@@ -101,38 +101,6 @@
             </FrameLayout>
 
             <FrameLayout
-                android:id="@+id/fl_add_card"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_gravity="center"
-                android:padding="12dp">
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Add Cards to the Current Set"
-                    android:textSize="20sp"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-            </FrameLayout>
-
-            <FrameLayout
-                android:id="@+id/fl_delete_card"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_gravity="center"
-                android:padding="12dp">
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Delete Cards From Current Set"
-                    android:textSize="20sp"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-            </FrameLayout>
-
-            <FrameLayout
                 android:id="@+id/fl_switch_collection"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"

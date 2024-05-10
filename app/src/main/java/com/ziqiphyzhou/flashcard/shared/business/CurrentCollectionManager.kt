@@ -8,18 +8,18 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-class CurrentCollection @Inject constructor(private val repo: CardRepository) {
+class CurrentCollectionManager @Inject constructor(private val repo: CardRepository) {
 
     private val sharedPrefKey = "coll"
     private val sharedPref =
         PreferenceManager.getDefaultSharedPreferences(AppApplication.INSTANCE.applicationContext)
     private var coll: String? = sharedPref.getString(sharedPrefKey, null)
 
+    // have to be careful
+    // all non-null coll has to exist
+    // non-existing coll is set to null
+    // all use of get() should use null-safety to prevent acting on null collection
     fun get() = coll
-
-    fun set() {
-        coll = sharedPref.getString(sharedPrefKey, null)
-    }
 
     suspend fun set(setToColl: String?): Boolean {
         return withContext(Dispatchers.IO) {
@@ -33,4 +33,5 @@ class CurrentCollection @Inject constructor(private val repo: CardRepository) {
             } ?: true.also { coll = null }
         }
     }
+
 }

@@ -1,38 +1,37 @@
 package com.ziqiphyzhou.flashcard.settings_manage.presentation
 
 import androidx.lifecycle.ViewModel
-import com.ziqiphyzhou.flashcard.card_handle.business.CardHandler
+import com.ziqiphyzhou.flashcard.collection_manager.business.CollectionManager
+import com.ziqiphyzhou.flashcard.shared.business.CurrentCollectionManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
-class SettingsViewModel @Inject constructor(private val cardHandler: CardHandler) : ViewModel() {
+class SettingsViewModel @Inject constructor(
+    private val curColl: CurrentCollectionManager,
+    private val collManager: CollectionManager
+) : ViewModel() {
 
     suspend fun deleteCurrentCollection(): Boolean {
         return withContext(Dispatchers.IO) {
-            cardHandler.deleteCollection()
+            collManager.deleteCollection()
         }
     }
 
     fun getCurrentCollectionName(): String {
-        return cardHandler.getCollectionName()
+        return curColl.get().toString()
     }
 
     suspend fun addCollection(coll: String): Boolean {
         return withContext(Dispatchers.IO) {
-            cardHandler.addCollection(coll)
+            collManager.addCollection(coll)
         }
     }
 
     suspend fun switchCollection(coll: String): Boolean {
-        return try {
-            cardHandler.setupHandler(coll)
-            true
-        } catch (e: CardHandler.Companion.CollectionMissingException) {
-            false
-        }
+        return curColl.set(coll)
     }
 
 }

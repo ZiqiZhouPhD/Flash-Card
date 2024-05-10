@@ -8,7 +8,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ziqiphyzhou.flashcard.card_handle.business.CardHandler
+import com.ziqiphyzhou.flashcard.card_main.business.CardDealer
+import com.ziqiphyzhou.flashcard.shared.business.CurrentCollectionManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -17,7 +18,7 @@ import javax.inject.Inject
 // the activity declare "private val viewModel: CardViewModel by viewModels()" to use it
 // the initializer needs to be set by a dependency injection library (hilt/dagger)
 @HiltViewModel // needed before view models needing injection
-class CardViewModel @Inject constructor(private val cardHandler: CardHandler) : ViewModel() {
+class CardViewModel @Inject constructor(private val cardDealer: CardDealer) : ViewModel() {
 
     // the following trick of defining two variables allows us to mutate live data here in the view model
     // but not access the live data outside
@@ -31,9 +32,9 @@ class CardViewModel @Inject constructor(private val cardHandler: CardHandler) : 
         viewModelScope.launch {
             _viewState.postValue(CardViewState.Freeze)
             try {
-                val card = cardHandler.getTop()
+                val card = cardDealer.getTop()
                 _viewState.postValue(CardViewState.ShowTitleOnly(card.title, card.body))
-            } catch (e: CardHandler.Companion.CollectionEmptyException) {
+            } catch (e: CardDealer.Companion.CollectionEmptyException) {
                 _viewState.postValue(CardViewState.CollectionEmpty)
             }
         }
@@ -42,7 +43,7 @@ class CardViewModel @Inject constructor(private val cardHandler: CardHandler) : 
     fun buryCard(isRemembered: Boolean) {
         viewModelScope.launch {
             _viewState.postValue(CardViewState.Freeze)
-            cardHandler.buryCard(isRemembered)
+            cardDealer.buryCard(isRemembered)
             loadCard()
         }
     }
@@ -50,8 +51,8 @@ class CardViewModel @Inject constructor(private val cardHandler: CardHandler) : 
     fun initView() {
         viewModelScope.launch {
             try {
-                cardHandler.setupHandler()
-            } catch (e: CardHandler.Companion.CollectionMissingException) {
+                cardDealer.setupDealer()
+            } catch (e: CardDealer.Companion.CollectionMissingException) {
                 _viewState.postValue(CardViewState.CollectionMissing)
                 return@launch
             }

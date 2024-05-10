@@ -117,14 +117,6 @@ class SettingsActivity : AppCompatActivity() {
                 .create().show()
         }
 
-        binding.flAddCard.setOnClickListener {
-            startActivity(Intent(this, AddActivity::class.java))
-        }
-
-        binding.flDeleteCard.setOnClickListener {
-            startActivity(Intent(this, DeleteActivity::class.java))
-        }
-
         binding.flSettingsShowCurrentSetName.setOnClickListener {
             Snackbar.make(
                 binding.root,
