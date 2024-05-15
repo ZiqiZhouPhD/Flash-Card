@@ -35,10 +35,7 @@ class CardDealerImpl @Inject constructor(
         return withContext(Dispatchers.IO) {
             curColl.get()?.let { coll ->
                 val topCard = repository.getTop(coll)
-                if (topCard.id.substring(
-                        0,
-                        1
-                    ) == "@"
+                if (topCard.id == ""
                 ) throw CardDealer.Companion.CollectionEmptyException()
                 return@let topCard
             } ?: throw CardDealer.Companion.CollectionMissingException()

@@ -25,7 +25,7 @@
         <activity
             android:name=".card_add.presentation.AddActivity"
             android:exported="false"
-            android:parentActivityName=".card_main.presentation.MainActivity" />
+            android:parentActivityName=".card_delete.presentation.DeleteActivity" />
         <activity
             android:name=".card_delete.presentation.DeleteActivity"
             android:exported="false"

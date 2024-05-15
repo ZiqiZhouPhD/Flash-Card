@@ -2,6 +2,9 @@ package com.ziqiphyzhou.flashcard.settings_manage.presentation
 
 import android.content.Intent
 import android.os.Bundle
+import android.speech.tts.TextToSpeech
+import android.util.Log
+import android.widget.ArrayAdapter
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
@@ -9,9 +12,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.google.android.material.snackbar.Snackbar
-import com.ziqiphyzhou.flashcard.R
-import com.ziqiphyzhou.flashcard.card_add.presentation.AddActivity
-import com.ziqiphyzhou.flashcard.card_delete.presentation.DeleteActivity
 import com.ziqiphyzhou.flashcard.databinding.ActivitySettingsBinding
 import com.ziqiphyzhou.flashcard.databinding.DialogTextEditBinding
 import com.ziqiphyzhou.flashcard.import_export.presentation.ImportExportActivity
@@ -20,11 +20,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
+
 @AndroidEntryPoint
 class SettingsActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySettingsBinding
     private val viewModel: SettingsViewModel by viewModels()
+    private lateinit var textToSpeech: TextToSpeech
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -125,5 +127,14 @@ class SettingsActivity : AppCompatActivity() {
             ).show()
         }
 
+        textToSpeech = TextToSpeech(this) {
+        val spinnerArrayAdapter: ArrayAdapter<*> = ArrayAdapter<String>(
+            this,
+            android.R.layout.simple_spinner_dropdown_item,
+            textToSpeech.availableLanguages.toList().map { "${it.language}-${it.country}-${it.variant}" }.sorted()
+        )
+        binding.spinnerVoice.setAdapter(spinnerArrayAdapter)
+        }
     }
+
 }

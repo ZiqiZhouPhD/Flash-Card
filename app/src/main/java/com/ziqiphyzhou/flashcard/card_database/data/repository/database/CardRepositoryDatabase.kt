@@ -252,17 +252,17 @@ class CardRepositoryDatabase @Inject constructor(private val cardDao: CardDao) :
         val cardListSize = allCards.size
         if (cardListSize == 0) return false
         if (cardListSize == 1) {
-            return (allCards[0].id.substring(0, 1) == "@" && allCards[0].previous.substring(
-                0,
-                1
-            ) == "@")
+            return (
+                    allCards[0].id.substring(0, 1) == "@"
+                            && allCards[0].previous.substring(0, 1) == "@"
+                    )
         }
         var isZeroCardExist = false
         val lastCard = allCards.last()
         val linkFromSet = mutableSetOf<String>() // has link pointing from it
         val linkToSet = mutableSetOf<String>() // has link pointing to it
         for (cardEntity in allCards) {
-            if (cardEntity.title == "") return false
+            if (cardEntity.title == "" && cardEntity.id.substring(0, 1) != "@" ) return false
             if (cardEntity.id.substring(0, 1) == "@") isZeroCardExist = true
             if (cardEntity.previous in linkToSet || cardEntity.id in linkFromSet) {
                 return false
@@ -292,7 +292,7 @@ class CardRepositoryDatabase @Inject constructor(private val cardDao: CardDao) :
 
     companion object {
         private fun createZeroCard(coll: String) =
-            CardEntity("@$coll", "null", "null", 0, "@$coll", 1, coll)
+            CardEntity("@$coll", "", "", 0, "@$coll", 1, coll)
     }
 
 }

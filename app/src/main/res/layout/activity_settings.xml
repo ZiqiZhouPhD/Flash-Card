@@ -40,15 +40,13 @@
                 android:id="@+id/fl_settings_show_current_set_name"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_gravity="center"
                 android:padding="12dp">
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Show Current Card Set Name"
-                    android:textSize="20sp"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    android:textSize="20sp" />
 
             </FrameLayout>
 
@@ -56,15 +54,13 @@
                 android:id="@+id/fl_settings_open_import_export"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_gravity="center"
                 android:padding="12dp">
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Import / Export"
-                    android:textSize="20sp"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    android:textSize="20sp" />
 
             </FrameLayout>
 
@@ -72,15 +68,13 @@
                 android:id="@+id/fl_delete_collection"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_gravity="center"
                 android:padding="12dp">
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Delete the Current Cardset"
-                    android:textSize="20sp"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    android:textSize="20sp" />
 
             </FrameLayout>
 
@@ -88,15 +82,13 @@
                 android:id="@+id/fl_add_collection"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_gravity="center"
                 android:padding="12dp">
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Create a New Card Set"
-                    android:textSize="20sp"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    android:textSize="20sp" />
 
             </FrameLayout>
 
@@ -104,17 +96,36 @@
                 android:id="@+id/fl_switch_collection"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_gravity="center"
                 android:padding="12dp">
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Switch Card Set"
-                    android:textSize="20sp"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    android:textSize="20sp" />
 
             </FrameLayout>
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:id="@+id/fl_voice"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="12dp">
+
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Text-to-Speech Voice"
+                    android:textSize="20sp"/>
+
+                <Spinner
+                    android:id="@+id/spinner_voice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+            </LinearLayout>
 
         </LinearLayout>
 

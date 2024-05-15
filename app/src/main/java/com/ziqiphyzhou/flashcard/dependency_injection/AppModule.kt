@@ -53,7 +53,6 @@ class AppModule {
         cardRepositoryDatabase: CardRepositoryDatabase
     ): CardRepository = cardRepositoryDatabase
 
-    @Singleton
     @Provides
     fun provideCardDealer(
         cardDealerImpl: CardDealerImpl

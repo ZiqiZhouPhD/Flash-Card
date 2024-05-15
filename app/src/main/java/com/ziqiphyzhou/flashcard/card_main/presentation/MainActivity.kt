@@ -196,10 +196,10 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
         return when (item.itemId) {
             R.id.menu_item_voice -> toggleVoiceMode()
 
-            R.id.menu_item_add -> { //showAddCardDialog()
-                startActivity(Intent(this, AddActivity::class.java))
-                true
-            }
+//            R.id.menu_item_add -> { //showAddCardDialog()
+//                startActivity(Intent(this, AddActivity::class.java))
+//                true
+//            }
 
             R.id.menu_item_delete -> {
                 startActivity(Intent(this, DeleteActivity::class.java))

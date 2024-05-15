@@ -1,6 +1,8 @@
 package com.ziqiphyzhou.flashcard.card_delete.presentation
 
+import android.content.Intent
 import android.os.Bundle
+import android.speech.tts.TextToSpeech
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -11,6 +13,10 @@ import com.google.android.material.snackbar.Snackbar
 import com.ziqiphyzhou.flashcard.databinding.ActivityDeleteBinding
 import dagger.hilt.android.AndroidEntryPoint
 import android.view.inputmethod.InputMethodManager
+import com.ziqiphyzhou.flashcard.card_add.presentation.AddActivity
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class DeleteActivity : AppCompatActivity() {
@@ -44,6 +50,10 @@ class DeleteActivity : AppCompatActivity() {
                 inputMethodManager.hideSoftInputFromWindow(binding.root.windowToken, 0)
                 Snackbar.make(binding.root, it, Snackbar.LENGTH_LONG).show()
             }
+        }
+
+        binding.fabCardAdd.setOnClickListener {
+            startActivity(Intent(this, AddActivity::class.java))
         }
     }
 }
