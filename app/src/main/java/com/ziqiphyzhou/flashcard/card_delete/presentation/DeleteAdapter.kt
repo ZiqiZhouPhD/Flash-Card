@@ -16,7 +16,8 @@ import kotlinx.coroutines.launch
 import kotlin.reflect.KFunction1
 
 class DeleteAdapter(
-    val onDeleteClicked: (DeleteCardViewState) -> Unit
+    val onDeleteClicked: (DeleteCardViewState) -> Unit,
+    val onEditClicked: (DeleteCardViewState) -> Unit
 ) : RecyclerView.Adapter<DeleteAdapter.ViewHolder>() {
 
     private var data: List<DeleteCardViewState> = listOf()
@@ -47,6 +48,9 @@ class DeleteAdapter(
             bind.tvDeleteItemBody.text = deleteCardViewState.body
             bind.buttonDeleteCardItem.setOnClickListener {
                 onDeleteClicked(deleteCardViewState)
+            }
+            bind.buttonEditCardItem.setOnClickListener {
+                onEditClicked(deleteCardViewState)
             }
 
         }

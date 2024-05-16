@@ -24,5 +24,6 @@ interface CardRepository {
     suspend fun deleteCollection(coll: String): Boolean
     suspend fun isCollectionExist(coll: String?): Boolean
     suspend fun addCollection(coll: String): Boolean
+    suspend fun editCard(id: String, coll: String, title: String, body: String): Boolean
 
 }

@@ -14,6 +14,7 @@ import com.ziqiphyzhou.flashcard.databinding.ActivityDeleteBinding
 import dagger.hilt.android.AndroidEntryPoint
 import android.view.inputmethod.InputMethodManager
 import com.ziqiphyzhou.flashcard.card_add.presentation.AddActivity
+import com.ziqiphyzhou.flashcard.card_edit.presentation.CardEditActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -55,5 +56,18 @@ class DeleteActivity : AppCompatActivity() {
         binding.fabCardAdd.setOnClickListener {
             startActivity(Intent(this, AddActivity::class.java))
         }
+    }
+
+    fun editCard(id: String, title: String, body: String) {
+        val intent = Intent(this, CardEditActivity::class.java)
+        intent.putExtra("id", id)
+        intent.putExtra("title", title)
+        intent.putExtra("body", body)
+        startActivity(intent)
+    }
+
+    override fun onRestart() {
+        super.onRestart()
+        binding.editTextSearchForDelete.text.clear()
     }
 }

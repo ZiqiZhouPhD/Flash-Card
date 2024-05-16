@@ -2,10 +2,10 @@
 
 ## To-dos 
 
-* Implement edit card activity. 
+* Revise edit card activity. 
 * Implement edit collection activity. 
 * Daily count. 
 * Setup themes. 
 * Implement edit bookmark behaviors (app-wide setting).
 * Keep activity while screen locked. 
-* Set language and voice (collection-specific setting marked on zeroCard title).
+* Finish edit language and voice (collection-specific setting marked on zeroCard title). 

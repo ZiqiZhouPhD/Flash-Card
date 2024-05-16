@@ -36,4 +36,11 @@ class CardEditor @Inject constructor(
         } ?: false
     }
 
+    suspend fun editCard(id: String, title: String, body: String): Boolean {
+        return curColl.get()?.let {
+            repo.editCard(id, it, title, body)
+            true
+        } ?: false
+    }
+
 }

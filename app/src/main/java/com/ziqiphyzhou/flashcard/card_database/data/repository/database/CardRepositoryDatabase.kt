@@ -240,6 +240,16 @@ class CardRepositoryDatabase @Inject constructor(private val cardDao: CardDao) :
         }
     }
 
+    override suspend fun editCard(id: String, coll: String, title: String, body: String): Boolean {
+        return withContext(Dispatchers.IO) {
+            val card = cardDao.getById("$id@$coll")
+            card.title = title
+            card.body = body
+            cardDao.updateCard(card)
+            true
+        }
+    }
+
     private suspend fun restoreCollection(cardList: List<CardEntity>, coll: String) {
         withContext(Dispatchers.IO) {
             cardDao.deleteAllExceptZero(coll)

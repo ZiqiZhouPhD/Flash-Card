@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/view_card_edit">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        android:id="@+id/top_bar_layout_card_edit"
+        >
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/top_bar_card_edit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="?attr/actionBarSize"
+            app:title="Edit Card"
+            app:titleCentered="true"
+            app:navigationIcon="@drawable/ic_back_arrow" />
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <EditText
+        android:layout_margin="24dp"
+        android:id="@+id/edit_text_edit_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Card Title"
+        android:importantForAutofill="no"
+        android:inputType="text"
+        app:layout_constraintTop_toBottomOf="@id/top_bar_layout_card_edit" />
+
+    <EditText
+        android:layout_margin="24dp"
+        android:id="@+id/edit_text_edit_body"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Card Body"
+        android:importantForAutofill="no"
+        android:inputType="text"
+        app:layout_constraintTop_toBottomOf="@id/edit_text_edit_title" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/button_save"
+        android:layout_margin="24dp"
+        style="@style/Widget.Material3.Button.TextButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/button_save"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/edit_text_edit_body" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
