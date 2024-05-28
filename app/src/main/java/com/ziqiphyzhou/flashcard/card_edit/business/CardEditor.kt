@@ -2,6 +2,7 @@ package com.ziqiphyzhou.flashcard.card_edit.business
 
 import com.ziqiphyzhou.flashcard.card_database.data.repository.CardRepository
 import com.ziqiphyzhou.flashcard.card_main.business.CardDealer
+import com.ziqiphyzhou.flashcard.shared.ADD_NEW_CARD_AFTER_LEVEL
 import com.ziqiphyzhou.flashcard.shared.business.Card
 import com.ziqiphyzhou.flashcard.shared.business.CurrentCollectionManager
 import kotlinx.coroutines.Dispatchers
@@ -21,12 +22,9 @@ class CardEditor @Inject constructor(
         }
     }
 
-    suspend fun addCard(title: String, body: String): Boolean {
-        return if (!repo.isCollectionExist(curColl.get())) false
-        else {
-            repo.addCard(title, body, curColl.get()!!)
-            true
-        }
+    suspend fun addCard(title: String, body: String, afterThisId: String): String? {
+        return if (!repo.isCollectionExist(curColl.get())) null
+        else { curColl.get()?.let {repo.addCard(title, body, afterThisId, it)} }
     }
 
     suspend fun deleteCard(id: String): Boolean {
@@ -41,6 +39,12 @@ class CardEditor @Inject constructor(
             repo.editCard(id, it, title, body)
             true
         } ?: false
+    }
+
+    suspend fun getAddAfterThisId(): String {
+        return curColl.get()?.let {
+            repo.getLastIdWithLevelNoMoreThan(ADD_NEW_CARD_AFTER_LEVEL, it)
+        } ?: ""
     }
 
 }

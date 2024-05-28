@@ -58,22 +58,21 @@ class CardRepositoryDatabase @Inject constructor(private val cardDao: CardDao) :
         return noCollideId
     }
 
-    override suspend fun addCard(title: String, body: String, coll: String): Boolean {
+    override suspend fun addCard(title: String, body: String, afterThisId: String, coll: String): String? {
         return withContext(Dispatchers.IO) {
-            val zeroCard = cardDao.getById("@$coll")
-            val lastCard = cardDao.getById(zeroCard.previous)
-            zeroCard.previous = genIdWithoutCollision(title, coll)
+            val beforeThisCard = cardDao.getNextById("$afterThisId@$coll")
+            beforeThisCard.previous = genIdWithoutCollision(title, coll)
             cardDao.addCard(
                 CardEntity(
-                    id = zeroCard.previous,
+                    id = beforeThisCard.previous,
                     title = title,
                     body = body,
-                    previous = lastCard.id,
+                    previous = "$afterThisId@$coll",
                     coll = coll
                 )
             )
-            cardDao.updateCard(zeroCard)
-            true
+            cardDao.updateCard(beforeThisCard)
+            return@withContext beforeThisCard.previous.substringBefore("@")
         }
     }
 
@@ -247,6 +246,18 @@ class CardRepositoryDatabase @Inject constructor(private val cardDao: CardDao) :
             card.body = body
             cardDao.updateCard(card)
             true
+        }
+    }
+
+    override suspend fun getLastIdWithLevelNoMoreThan(level: Int, coll: String): String {
+        return withContext(Dispatchers.IO) {
+            var card = cardDao.getById("@$coll") // the zero card
+            var returnId = ""
+            do {
+                if (card.level <= level) returnId = card.id.substringBefore("@")
+                card = cardDao.getNextById(card.id)
+            } while (card.id != "@$coll")
+            return@withContext returnId
         }
     }
 

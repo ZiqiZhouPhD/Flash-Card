@@ -17,11 +17,26 @@ class AddViewModel @Inject constructor(private val cardEditor: CardEditor) : Vie
     val addCardSuccessMessage: LiveData<Event<String>>
         get() = _addCardSuccessMessage
 
+    private val _initDone = MutableLiveData<Boolean>()
+    val initDone: LiveData<Boolean>
+        get() = _initDone
+
+    private var addAfterThisId = ""
+
+    fun updateAddAfterThisId() {
+        viewModelScope.launch {
+            addAfterThisId = cardEditor.getAddAfterThisId()
+            _initDone.postValue(true)
+        }
+    }
+
     fun add(title: String, body: String) {
         viewModelScope.launch {
             val saveTitle = title.takeIf { it != "" } ?: "null"
-            if (cardEditor.addCard(saveTitle, body)) _addCardSuccessMessage.value = Event("Card \"${saveTitle}\" added. ")
-            else _addCardSuccessMessage.value = Event("Failed to add")
+            cardEditor.addCard(saveTitle, body, addAfterThisId)?.let {
+                addAfterThisId = it
+                _addCardSuccessMessage.postValue(Event("Card \"${saveTitle}\" added. "))
+            } ?: _addCardSuccessMessage.postValue(Event("Failed to add"))
         }
     }
 }

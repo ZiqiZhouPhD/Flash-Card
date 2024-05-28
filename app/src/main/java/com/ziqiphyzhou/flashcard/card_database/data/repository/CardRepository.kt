@@ -11,7 +11,7 @@ interface CardRepository {
 
     suspend fun getTop(coll: String): Card
     suspend fun isStructureIntact(coll: String): Boolean
-    suspend fun addCard(title: String, body: String, coll: String): Boolean
+    suspend fun addCard(title: String, body: String, afterThisId: String, coll: String): String?
     suspend fun exportCollection(coll: String): List<Card>
     suspend fun getAllBeginWith(substring: String, coll: String): List<Card>
     suspend fun deleteCard(id: String, coll: String): Boolean
@@ -25,5 +25,6 @@ interface CardRepository {
     suspend fun isCollectionExist(coll: String?): Boolean
     suspend fun addCollection(coll: String): Boolean
     suspend fun editCard(id: String, coll: String, title: String, body: String): Boolean
+    suspend fun getLastIdWithLevelNoMoreThan(level: Int, coll: String): String
 
 }

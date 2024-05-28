@@ -98,7 +98,7 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
             KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE -> {
                 mediaButtonState = false // forgotten
                 textToSpeech.setLanguage(Companion.LANGUAGE_PRIMARY)
-                textToSpeech.speak(cardBodyText?.substringBefore("("), TextToSpeech.QUEUE_FLUSH, null, null)
+                textToSpeech.speak(cardBodyText?.let { removeParentheses(it) }, TextToSpeech.QUEUE_FLUSH, null, null)
                 return true
             }
 
@@ -111,6 +111,14 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
 
             else -> return super.onKeyDown(keyCode, event)
         }
+    }
+
+    private fun removeParentheses(inputString: String): String {
+        var string = inputString
+        while ("(" in string) {
+            string = string.substringBefore("(") + string.substringAfter(")")
+        }
+        return string
     }
 
     private fun showCardBody() {

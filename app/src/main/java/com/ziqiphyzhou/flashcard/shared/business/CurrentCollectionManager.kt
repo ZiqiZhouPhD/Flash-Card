@@ -13,7 +13,7 @@ class CurrentCollectionManager @Inject constructor(private val repo: CardReposit
     private val sharedPrefKey = "coll"
     private val sharedPref =
         PreferenceManager.getDefaultSharedPreferences(AppApplication.INSTANCE.applicationContext)
-    private var coll: String? = sharedPref.getString(sharedPrefKey, null)
+    private var coll: String? = getSharedPrefColl()
 
     // have to be careful
     // all non-null coll has to exist
@@ -30,8 +30,17 @@ class CurrentCollectionManager @Inject constructor(private val repo: CardReposit
                     sharedPref.edit { putString(sharedPrefKey, setToColl) }
                     return@let true
                 }
-            } ?: true.also { coll = null }
+            } ?: true.also {
+                coll = null
+                sharedPref.edit { putString(sharedPrefKey, "") }
+            }
         }
+    }
+
+    private fun getSharedPrefColl(): String? {
+        val returnString = sharedPref.getString(sharedPrefKey, "")
+        return if (returnString == "") null
+        else returnString
     }
 
 }

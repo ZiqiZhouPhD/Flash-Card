@@ -59,9 +59,14 @@ class AddActivity : AppCompatActivity() {
             }
         }
 
+        viewModel.initDone.observe(this) {binding.buttonSave.isEnabled = it}
+        binding.buttonSave.isEnabled = false
+
         binding.topBarAdd.setNavigationOnClickListener {
             this@AddActivity.onBackPressedDispatcher.onBackPressed()
         }
+
+        viewModel.updateAddAfterThisId()
 
     }
 }
