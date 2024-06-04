@@ -9,7 +9,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ziqiphyzhou.flashcard.card_main.business.CardDealer
-import com.ziqiphyzhou.flashcard.shared.business.CurrentCollectionManager
+import com.ziqiphyzhou.flashcard.shared.presentation.view_model.Event
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -28,12 +28,17 @@ class CardViewModel @Inject constructor(private val cardDealer: CardDealer) : Vi
     val viewState: LiveData<CardViewState>
         get() = _viewState
 
+    private val _voices = MutableLiveData<Event<Pair<String,String>>>()
+    val voices: LiveData<Event<Pair<String,String>>>
+        get() = _voices
+
     fun loadCard() {
         viewModelScope.launch {
             _viewState.postValue(CardViewState.Freeze)
             try {
-                val card = cardDealer.getTop()
-                _viewState.postValue(CardViewState.ShowTitleOnly(card.title, card.body))
+                _voices.value = Event(cardDealer.getVoices())
+                val topCard = cardDealer.getTop()
+                _viewState.postValue(CardViewState.ShowTitleOnly(topCard.title, topCard.body))
             } catch (e: CardDealer.Companion.CollectionEmptyException) {
                 _viewState.postValue(CardViewState.CollectionEmpty)
             }

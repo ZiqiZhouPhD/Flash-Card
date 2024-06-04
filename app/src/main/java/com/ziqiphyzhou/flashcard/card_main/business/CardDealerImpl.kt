@@ -1,6 +1,5 @@
 package com.ziqiphyzhou.flashcard.card_main.business
 
-import android.util.Log
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import com.google.gson.Gson
@@ -31,6 +30,12 @@ class CardDealerImpl @Inject constructor(
 
     private val gson = Gson()
 
+    override suspend fun getVoices(): Pair<String,String> {
+        return withContext(Dispatchers.IO) {
+            curColl.getVoices() ?: throw CardDealer.Companion.CollectionMissingException()
+        }
+    }
+
     override suspend fun getTop(): Card {
         return withContext(Dispatchers.IO) {
             curColl.get()?.let { coll ->
@@ -40,7 +45,6 @@ class CardDealerImpl @Inject constructor(
                 return@let topCard
             } ?: throw CardDealer.Companion.CollectionMissingException()
         }
-
     }
 
     private suspend fun initBookmarkIdList(insertPosList: List<Int>) {

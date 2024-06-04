@@ -20,6 +20,12 @@ import javax.inject.Inject
 class CardRepositoryDatabase @Inject constructor(private val cardDao: CardDao) : CardRepository {
 
     // the suspended function will be run on the IO dispatcher
+    override suspend fun getZero(coll: String): Card { // return zeroCard if no other card is present
+        return withContext(Dispatchers.IO) {
+            castEntityToCard(cardDao.getById("@$coll"))
+        }
+    }
+
     override suspend fun getTop(coll: String): Card { // return zeroCard if no other card is present
         return withContext(Dispatchers.IO) {
             castEntityToCard(cardDao.getNextById("@$coll"))
@@ -258,6 +264,18 @@ class CardRepositoryDatabase @Inject constructor(private val cardDao: CardDao) :
                 card = cardDao.getNextById(card.id)
             } while (card.id != "@$coll")
             return@withContext returnId
+        }
+    }
+
+    override suspend fun setVoiceToZeroCard(voice: String, titleOrBody: String, coll: String): Boolean {
+        return withContext(Dispatchers.IO) {
+            val zeroCard = cardDao.getById("@$coll")
+            when (titleOrBody) {
+                "title" -> zeroCard.title = voice
+                "body" -> zeroCard.body = voice
+            }
+            cardDao.updateCard(zeroCard)
+            return@withContext true
         }
     }
 

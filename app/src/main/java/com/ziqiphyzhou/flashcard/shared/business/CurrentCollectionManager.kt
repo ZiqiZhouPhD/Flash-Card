@@ -4,6 +4,7 @@ import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import com.ziqiphyzhou.flashcard.AppApplication
 import com.ziqiphyzhou.flashcard.card_database.data.repository.CardRepository
+import com.ziqiphyzhou.flashcard.card_main.business.CardDealer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -41,6 +42,21 @@ class CurrentCollectionManager @Inject constructor(private val repo: CardReposit
         val returnString = sharedPref.getString(sharedPrefKey, "")
         return if (returnString == "") null
         else returnString
+    }
+
+    suspend fun setVoiceToCurColl(voice: String, titleOrBody: String): Boolean {
+        return withContext(Dispatchers.IO) {
+            coll?.let { repo.setVoiceToZeroCard(voice, titleOrBody, it) } ?: false
+        }
+    }
+
+    suspend fun getVoices(): Pair<String,String>? {
+        return withContext(Dispatchers.IO) {
+            coll?.let {
+                val zeroCard = repo.getZero(it)
+                return@let Pair(zeroCard.title, zeroCard.body)
+            }
+        }
     }
 
 }

@@ -9,6 +9,7 @@ import com.ziqiphyzhou.flashcard.shared.business.Card
 // public functions in this class should maintain the integrity of the card repo
 interface CardRepository {
 
+    suspend fun getZero(coll: String): Card
     suspend fun getTop(coll: String): Card
     suspend fun isStructureIntact(coll: String): Boolean
     suspend fun addCard(title: String, body: String, afterThisId: String, coll: String): String?
@@ -26,5 +27,6 @@ interface CardRepository {
     suspend fun addCollection(coll: String): Boolean
     suspend fun editCard(id: String, coll: String, title: String, body: String): Boolean
     suspend fun getLastIdWithLevelNoMoreThan(level: Int, coll: String): String
+    suspend fun setVoiceToZeroCard(voice: String, titleOrBody: String, coll: String): Boolean
 
 }

@@ -4,6 +4,8 @@ import android.content.Intent
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
 import android.util.Log
+import android.view.View
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
@@ -127,13 +129,52 @@ class SettingsActivity : AppCompatActivity() {
             ).show()
         }
 
+        CoroutineScope(Dispatchers.IO).launch {
+            val voices = viewModel.getVoices()
+            binding.tvTitleVoice.text = "Current Title Voice: ${voices.first}"
+            binding.tvBodyVoice.text = "Current Body Voice: ${voices.second}"
+        }
+
         textToSpeech = TextToSpeech(this) {
-        val spinnerArrayAdapter: ArrayAdapter<*> = ArrayAdapter<String>(
-            this,
-            android.R.layout.simple_spinner_dropdown_item,
-            textToSpeech.availableLanguages.toList().map { "${it.language}-${it.country}-${it.variant}" }.sorted()
-        )
-        binding.spinnerVoice.setAdapter(spinnerArrayAdapter)
+            val spinnerArrayAdapter: ArrayAdapter<*> = ArrayAdapter<String>(
+                this,
+                android.R.layout.simple_spinner_dropdown_item,
+                textToSpeech.availableLanguages.toList()
+                    .map { "${it.language}-${it.country}-${it.variant}" }.sorted()
+            )
+            binding.spinnerTitleVoice.setAdapter(spinnerArrayAdapter)
+            binding.spinnerBodyVoice.setAdapter(spinnerArrayAdapter)
+        }
+
+        binding.buttonTitleVoiceSave.setOnClickListener {
+            saveItemSelectedVoiceSpinner("title",
+                binding.spinnerTitleVoice.selectedItem.toString()
+            )
+        }
+
+        binding.buttonBodyVoiceSave.setOnClickListener {
+            saveItemSelectedVoiceSpinner("body",
+                binding.spinnerBodyVoice.selectedItem.toString()
+            )
+        }
+
+    }
+
+    private fun saveItemSelectedVoiceSpinner(titleOrBody: String, voice: String) {
+        CoroutineScope(Dispatchers.IO).launch {
+            if (viewModel.setVoice(voice, titleOrBody)) {
+                Snackbar.make(
+                    binding.root,
+                    "Voice set for card $titleOrBody",
+                    Snackbar.LENGTH_LONG
+                ).show()
+            } else {
+                Snackbar.make(
+                    binding.root,
+                    "Voice failed to set! ",
+                    Snackbar.LENGTH_LONG
+                ).show()
+            }
         }
     }
 

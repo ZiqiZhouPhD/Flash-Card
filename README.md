@@ -8,5 +8,4 @@
 * Daily count. 
 * Setup themes. 
 * Implement edit bookmark behaviors (app-wide setting).
-* Finish edit language and voice (collection-specific setting marked on zeroCard title). 
 * Debug database behaviors. 

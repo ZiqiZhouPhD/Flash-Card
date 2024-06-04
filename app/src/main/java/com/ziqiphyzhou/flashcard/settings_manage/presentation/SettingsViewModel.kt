@@ -11,7 +11,7 @@ import javax.inject.Inject
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val curColl: CurrentCollectionManager,
-    private val collManager: CollectionManager
+    private val collManager: CollectionManager,
 ) : ViewModel() {
 
     suspend fun deleteCurrentCollection(): Boolean {
@@ -32,6 +32,18 @@ class SettingsViewModel @Inject constructor(
 
     suspend fun switchCollection(coll: String): Boolean {
         return curColl.set(coll)
+    }
+
+    suspend fun setVoice(voice: String, titleOrBody: String): Boolean {
+        return withContext(Dispatchers.IO) {
+            curColl.setVoiceToCurColl(voice, titleOrBody)
+        }
+    }
+
+    suspend fun getVoices(): Pair<String,String> {
+        return withContext(Dispatchers.IO) {
+            curColl.getVoices() ?: Pair("","")
+        }
     }
 
 }

@@ -49,6 +49,8 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
     private var voiceMode = false // redundant
     private var mediaButtonState = true
     private lateinit var viewState : CardViewState
+    private lateinit var titleVoice: Locale
+    private lateinit var bodyVoice: Locale
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,16 +63,21 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
             insets
         }
 
-        textToSpeech = TextToSpeech(this) {
-            checkLanguageAvailability(listOf(Companion.LANGUAGE_PRIMARY, Companion.LANGUAGE_CARD))
-        }
+        textToSpeech = TextToSpeech(this) {}
 
         viewModel.viewState.observe(this) { viewState = it; updateUi(it) }
         viewModel.initView()
 
+        viewModel.voices.observe(this) { event ->
+            event.getContentIfNotHandled()?.let {
+                titleVoice = convertVoiceStrToLocale(it.first)
+                bodyVoice = convertVoiceStrToLocale(it.second)
+            }
+        }
+
         binding.fab.setOnClickListener { showMenu(it) }
 
-        binding.fab.setOnLongClickListener { toggleVoiceMode() }
+        // binding.fab.setOnLongClickListener { toggleVoiceMode() }
 
         binding.btnRemember.setOnClickListener { viewModel.buryCard(true) }
 
@@ -97,14 +104,14 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
 
             KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE -> {
                 mediaButtonState = false // forgotten
-                textToSpeech.setLanguage(Companion.LANGUAGE_PRIMARY)
+                textToSpeech.setLanguage(bodyVoice)
                 textToSpeech.speak(cardBodyText?.let { removeParentheses(it) }, TextToSpeech.QUEUE_FLUSH, null, null)
                 return true
             }
 
             KeyEvent.KEYCODE_MEDIA_PREVIOUS -> {
                 mediaButtonState = true // remembered
-                textToSpeech.setLanguage(Companion.LANGUAGE_CARD)
+                textToSpeech.setLanguage(titleVoice)
                 textToSpeech.speak(binding.tvTitle.text, TextToSpeech.QUEUE_FLUSH, null, null)
                 return true
             }
@@ -129,23 +136,24 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
         }
     }
 
-    private fun checkLanguageAvailability(voices: List<Locale>) {
-        for (voice in voices) {
-            val result = textToSpeech.setLanguage(voice)
-            if (result == TextToSpeech.LANG_MISSING_DATA
-                || result == TextToSpeech.LANG_NOT_SUPPORTED
-            ) {
-                Snackbar.make(
-                    binding.root,
-                    "Text-to-speech language ${voice.language}-${voice.country} not supported!",
-                    Snackbar.LENGTH_LONG
-                ).show()
-            }
-        }
-    }
+//    private fun checkLanguageAvailability(voices: List<Locale>) {
+//        for (voice in voices) {
+//            val result = textToSpeech.setLanguage(voice)
+//            if (result == TextToSpeech.LANG_MISSING_DATA
+//                || result == TextToSpeech.LANG_NOT_SUPPORTED
+//            ) {
+//                Snackbar.make(
+//                    binding.root,
+//                    "Text-to-speech language ${voice.language}-${voice.country} not supported!",
+//                    Snackbar.LENGTH_LONG
+//                ).show()
+//            }
+//        }
+//    }
 
     override fun onRestart() {
         super.onRestart()
+        voiceMode = false
         viewModel.initView()
     }
 
@@ -176,7 +184,7 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
                 binding.btnForgot.text = resources.getString(R.string.btn_hesitate)
                 setButtonEnabled(true)
                 if (voiceMode) {
-                    textToSpeech.setLanguage(LANGUAGE_CARD)
+                    textToSpeech.setLanguage(titleVoice)
                     textToSpeech.speak(binding.tvTitle.text, TextToSpeech.QUEUE_FLUSH, null, null)
                 }
             }
@@ -235,9 +243,13 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
         return true
     }
 
-    companion object {
-        private val LANGUAGE_PRIMARY = Locale("en", "001")
-        private val LANGUAGE_CARD = Locale("ar", "001")
+    private fun convertVoiceStrToLocale(voice: String): Locale {
+        return try {
+            val voiceInfo = voice.split("-")
+            Locale(voiceInfo[0], voiceInfo[1], voiceInfo[2])
+        } catch (e: Exception) {
+            Locale.getDefault()
+        }
     }
 
 }
