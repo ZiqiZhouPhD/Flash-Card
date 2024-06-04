@@ -23,6 +23,7 @@ import androidx.compose.runtime.key
 import androidx.core.content.edit
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.isVisible
 import androidx.preference.PreferenceManager
 import com.google.android.material.snackbar.Snackbar
 import com.google.gson.Gson
@@ -47,7 +48,7 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
     private val viewModel: CardViewModel by viewModels()
     private lateinit var textToSpeech: TextToSpeech
     private var voiceMode = false // redundant
-    private var mediaButtonState = true
+    private var mediaButtonState = true // a cursor pointing to card behavior buttons in audio mode
     private lateinit var viewState : CardViewState
     private lateinit var titleVoice: Locale
     private lateinit var bodyVoice: Locale
@@ -77,7 +78,7 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
 
         binding.fab.setOnClickListener { showMenu(it) }
 
-        // binding.fab.setOnLongClickListener { toggleVoiceMode() }
+        binding.fab.setOnLongClickListener { toggleVoiceMode() }
 
         binding.btnRemember.setOnClickListener { viewModel.buryCard(true) }
 
@@ -93,7 +94,7 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
 
     }
 
-    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+    override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
         if (!voiceMode || viewState !is CardViewState.ShowTitleOnly) return super.onKeyDown(keyCode, event)
         when (keyCode) {
             KeyEvent.KEYCODE_MEDIA_NEXT -> { // push mediaButtonState to buryCard
@@ -136,24 +137,9 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
         }
     }
 
-//    private fun checkLanguageAvailability(voices: List<Locale>) {
-//        for (voice in voices) {
-//            val result = textToSpeech.setLanguage(voice)
-//            if (result == TextToSpeech.LANG_MISSING_DATA
-//                || result == TextToSpeech.LANG_NOT_SUPPORTED
-//            ) {
-//                Snackbar.make(
-//                    binding.root,
-//                    "Text-to-speech language ${voice.language}-${voice.country} not supported!",
-//                    Snackbar.LENGTH_LONG
-//                ).show()
-//            }
-//        }
-//    }
-
     override fun onRestart() {
         super.onRestart()
-        voiceMode = false
+        if (voiceMode) toggleVoiceMode()
         viewModel.initView()
     }
 
@@ -182,8 +168,8 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
                 setToDisplayOnly(viewState.title)
                 cardBodyText = viewState.body
                 binding.btnForgot.text = resources.getString(R.string.btn_hesitate)
-                setButtonEnabled(true)
-                if (voiceMode) {
+                if (!voiceMode) setButtonEnabled(true)
+                else {
                     textToSpeech.setLanguage(titleVoice)
                     textToSpeech.speak(binding.tvTitle.text, TextToSpeech.QUEUE_FLUSH, null, null)
                 }
@@ -210,12 +196,6 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
 
     override fun onMenuItemClick(item: MenuItem): Boolean {
         return when (item.itemId) {
-            R.id.menu_item_voice -> toggleVoiceMode()
-
-//            R.id.menu_item_add -> { //showAddCardDialog()
-//                startActivity(Intent(this, AddActivity::class.java))
-//                true
-//            }
 
             R.id.menu_item_delete -> {
                 startActivity(Intent(this, DeleteActivity::class.java))
@@ -233,12 +213,18 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
 
     private fun toggleVoiceMode(): Boolean {
         voiceMode = !voiceMode
-        val modeOnOffString = if (voiceMode) "on" else "off"
-        Snackbar.make(
-            binding.root,
-            "Audio mode $modeOnOffString",
-            Snackbar.LENGTH_LONG
-        ).show()
+        when (voiceMode) {
+            true -> {
+                binding.tvAudioMode.visibility = View.VISIBLE
+                binding.btnRemember.isEnabled = false
+                binding.btnForgot.isEnabled = false
+            }
+            false -> {
+                binding.tvAudioMode.visibility = View.GONE
+                binding.btnRemember.isEnabled = true
+                binding.btnForgot.isEnabled = true
+            }
+        }
         viewModel.loadCard()
         return true
     }
