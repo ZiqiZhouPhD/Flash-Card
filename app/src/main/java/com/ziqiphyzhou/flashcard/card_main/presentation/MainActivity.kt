@@ -170,6 +170,7 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
                 binding.btnForgot.text = resources.getString(R.string.btn_hesitate)
                 if (!voiceMode) setButtonEnabled(true)
                 else {
+                    mediaButtonState = true
                     textToSpeech.setLanguage(titleVoice)
                     textToSpeech.speak(binding.tvTitle.text, TextToSpeech.QUEUE_FLUSH, null, null)
                 }
