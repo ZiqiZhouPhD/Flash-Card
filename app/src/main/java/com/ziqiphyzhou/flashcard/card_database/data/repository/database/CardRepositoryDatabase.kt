@@ -88,9 +88,9 @@ class CardRepositoryDatabase @Inject constructor(private val cardDao: CardDao) :
         }
     }
 
-    override suspend fun getAllBeginWith(substring: String, coll: String): List<Card> {
+    override suspend fun getAllBeginWith(substring: String, coll: String, exact: Boolean): List<Card> {
         return withContext(Dispatchers.IO) {
-            cardDao.getAllByTitle("$substring%", coll)
+            cardDao.getAllByTitle(if (exact) substring else "$substring%", coll)
                 .sortedBy { it.title }.take(10)
                 .map { castEntityToCard(it) }
         }

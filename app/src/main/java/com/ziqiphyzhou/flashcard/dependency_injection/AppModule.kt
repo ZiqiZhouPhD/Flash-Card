@@ -15,6 +15,7 @@ import com.ziqiphyzhou.flashcard.card_database.data.repository.database.CardDao
 import com.ziqiphyzhou.flashcard.card_database.data.repository.database.CardDatabase
 import com.ziqiphyzhou.flashcard.card_main.business.CardDealer
 import com.ziqiphyzhou.flashcard.card_main.business.CardDealerImpl
+import com.ziqiphyzhou.flashcard.card_main.business.DailyCounter
 import com.ziqiphyzhou.flashcard.shared.business.CurrentCollectionManager
 import dagger.Module
 import dagger.Provides
@@ -63,5 +64,9 @@ class AppModule {
     fun provideCurrentCollection(
         repository: CardRepository
     ): CurrentCollectionManager = CurrentCollectionManager(repository)
+
+    @Singleton // included so that a singleton is used
+    @Provides
+    fun provideDailyCounter(): DailyCounter = DailyCounter()
 
 }

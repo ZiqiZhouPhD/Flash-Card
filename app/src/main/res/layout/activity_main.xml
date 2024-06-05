@@ -7,6 +7,29 @@
     android:layout_height="match_parent"
     tools:context=".card_main.presentation.MainActivity">
 
+    <TextView
+        android:id="@+id/tv_count"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="48dp"
+        android:fontFamily="sans-serif-medium"
+        android:textSize="28sp"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="@id/fab"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="@id/fab"
+        tools:text="123" />
+
+    <Button
+        android:id="@+id/btn_show_count_toggle"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:background="@android:color/transparent"
+        app:layout_constraintBottom_toBottomOf="@id/tv_count"
+        app:layout_constraintLeft_toLeftOf="@id/tv_count"
+        app:layout_constraintRight_toRightOf="@id/tv_count"
+        app:layout_constraintTop_toTopOf="@id/tv_count" />
+
     <LinearLayout
         android:id="@+id/ll_card"
         android:layout_width="match_parent"

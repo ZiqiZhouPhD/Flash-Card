@@ -39,4 +39,8 @@ class AddViewModel @Inject constructor(private val cardEditor: CardEditor) : Vie
             } ?: _addCardSuccessMessage.postValue(Event("Failed to add"))
         }
     }
+
+    suspend fun checkTitleExists(title: String): Boolean {
+        return cardEditor.checkTitleExists(title)
+    }
 }

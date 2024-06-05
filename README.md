@@ -2,10 +2,8 @@
 
 ## To-dos 
 
-* Keep activity while screen locked.
-* Revise edit card activity. 
-* Implement edit collection activity. 
-* Daily count. 
+* Implement edit collection activity.
 * Setup themes. 
 * Implement edit bookmark behaviors (app-wide setting).
 * Debug database behaviors. 
+* Include a behavior description page in settings. 

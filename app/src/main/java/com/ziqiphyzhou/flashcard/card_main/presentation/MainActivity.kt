@@ -22,7 +22,9 @@ import androidx.appcompat.widget.PopupMenu
 import androidx.compose.runtime.key
 import androidx.core.content.edit
 import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.isVisible
 import androidx.preference.PreferenceManager
 import com.google.android.material.snackbar.Snackbar
@@ -52,6 +54,7 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
     private lateinit var viewState : CardViewState
     private lateinit var titleVoice: Locale
     private lateinit var bodyVoice: Locale
+    private lateinit var windowInsetsController: WindowInsetsControllerCompat
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,6 +67,8 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
             insets
         }
 
+        windowInsetsController = WindowCompat.getInsetsController(window, window.decorView)
+
         textToSpeech = TextToSpeech(this) {}
 
         viewModel.viewState.observe(this) { viewState = it; updateUi(it) }
@@ -73,6 +78,20 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
             event.getContentIfNotHandled()?.let {
                 titleVoice = convertVoiceStrToLocale(it.first)
                 bodyVoice = convertVoiceStrToLocale(it.second)
+            }
+        }
+
+        viewModel.count.observe(this) { event ->
+            event.getContentIfNotHandled()?.let {
+                binding.tvCount.text = it.toString()
+            }
+        }
+
+        binding.btnShowCountToggle.setOnClickListener {
+            when (binding.tvCount.visibility) {
+                View.GONE -> binding.tvCount.visibility = View.VISIBLE
+                View.INVISIBLE -> binding.tvCount.visibility = View.VISIBLE
+                View.VISIBLE -> binding.tvCount.visibility = View.INVISIBLE
             }
         }
 
@@ -219,11 +238,13 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
                 binding.tvAudioMode.visibility = View.VISIBLE
                 binding.btnRemember.isEnabled = false
                 binding.btnForgot.isEnabled = false
+                windowInsetsController.hide(WindowInsetsCompat.Type.systemBars())
             }
             false -> {
                 binding.tvAudioMode.visibility = View.GONE
                 binding.btnRemember.isEnabled = true
                 binding.btnForgot.isEnabled = true
+                windowInsetsController.show(WindowInsetsCompat.Type.systemBars())
             }
         }
         viewModel.loadCard()

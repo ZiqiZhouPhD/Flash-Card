@@ -14,7 +14,7 @@ interface CardRepository {
     suspend fun isStructureIntact(coll: String): Boolean
     suspend fun addCard(title: String, body: String, afterThisId: String, coll: String): String?
     suspend fun exportCollection(coll: String): List<Card>
-    suspend fun getAllBeginWith(substring: String, coll: String): List<Card>
+    suspend fun getAllBeginWith(substring: String, coll: String, exact: Boolean = false): List<Card>
     suspend fun deleteCard(id: String, coll: String): Boolean
     suspend fun findInsertionPosIds(posList: List<Int>, coll: String): List<String>
     suspend fun buryTopAfterId(buryAfterThisId: String, coll: String)

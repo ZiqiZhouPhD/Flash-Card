@@ -22,6 +22,14 @@ class CardEditor @Inject constructor(
         }
     }
 
+    suspend fun checkTitleExists(title: String): Boolean {
+        return withContext(Dispatchers.IO) {
+            curColl.get()?.let { coll ->
+                repo.getAllBeginWith(title, coll, exact = true).isNotEmpty()
+            } ?: throw CardDealer.Companion.CollectionMissingException()
+        }
+    }
+
     suspend fun addCard(title: String, body: String, afterThisId: String): String? {
         return if (!repo.isCollectionExist(curColl.get())) null
         else { curColl.get()?.let {repo.addCard(title, body, afterThisId, it)} }

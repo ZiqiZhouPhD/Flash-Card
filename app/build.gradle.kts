@@ -1,3 +1,5 @@
+import org.apache.tools.ant.util.JavaEnvUtils.VERSION_1_8
+
 // kapt for data binding, should migrate to ksp when other imports are supported
 // room for sql database
 // lifecycle for MVVM and coroutines
@@ -17,7 +19,7 @@ android {
 
     defaultConfig {
         applicationId = "com.ziqiphyzhou.flashcard"
-        minSdk = 24
+        minSdk = 34
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"

@@ -9,6 +9,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ziqiphyzhou.flashcard.card_main.business.CardDealer
+import com.ziqiphyzhou.flashcard.card_main.business.DailyCounter
 import com.ziqiphyzhou.flashcard.shared.presentation.view_model.Event
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -18,7 +19,10 @@ import javax.inject.Inject
 // the activity declare "private val viewModel: CardViewModel by viewModels()" to use it
 // the initializer needs to be set by a dependency injection library (hilt/dagger)
 @HiltViewModel // needed before view models needing injection
-class CardViewModel @Inject constructor(private val cardDealer: CardDealer) : ViewModel() {
+class CardViewModel @Inject constructor(
+    private val cardDealer: CardDealer,
+    private val counter: DailyCounter
+) : ViewModel() {
 
     // the following trick of defining two variables allows us to mutate live data here in the view model
     // but not access the live data outside
@@ -31,6 +35,10 @@ class CardViewModel @Inject constructor(private val cardDealer: CardDealer) : Vi
     private val _voices = MutableLiveData<Event<Pair<String,String>>>()
     val voices: LiveData<Event<Pair<String,String>>>
         get() = _voices
+
+    private val _count = MutableLiveData<Event<Int>>()
+    val count: LiveData<Event<Int>>
+        get() = _count
 
     fun loadCard() {
         viewModelScope.launch {
@@ -49,6 +57,7 @@ class CardViewModel @Inject constructor(private val cardDealer: CardDealer) : Vi
         viewModelScope.launch {
             _viewState.postValue(CardViewState.Freeze)
             cardDealer.buryCard(isRemembered)
+            if (isRemembered) _count.value = Event(counter.incrementCount())
             loadCard()
         }
     }
@@ -62,6 +71,7 @@ class CardViewModel @Inject constructor(private val cardDealer: CardDealer) : Vi
                 return@launch
             }
             _viewState.postValue(CardViewState.Init)
+            _count.value = Event(counter.update())
         }
     }
 
