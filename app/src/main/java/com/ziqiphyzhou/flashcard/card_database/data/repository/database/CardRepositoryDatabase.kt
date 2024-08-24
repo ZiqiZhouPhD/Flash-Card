@@ -279,6 +279,10 @@ class CardRepositoryDatabase @Inject constructor(private val cardDao: CardDao) :
         }
     }
 
+    override suspend fun getAllCollectionNames(): List<String> {
+        return cardDao.getAllZeroCards().map { it.id.substring(1) }
+    }
+
     private suspend fun restoreCollection(cardList: List<CardEntity>, coll: String) {
         withContext(Dispatchers.IO) {
             cardDao.deleteAllExceptZero(coll)

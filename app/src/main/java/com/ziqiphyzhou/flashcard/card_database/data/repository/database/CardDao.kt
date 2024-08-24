@@ -47,4 +47,7 @@ interface CardDao {
     @Query("SELECT EXISTS(SELECT * FROM card WHERE id = :id)")
     fun isIdExist(id : String) : Boolean
 
+    @Query("SELECT * FROM card WHERE id LIKE '@%'")
+    fun getAllZeroCards(): List<CardEntity>
+
 }

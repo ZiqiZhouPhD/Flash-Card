@@ -62,6 +62,7 @@ class SettingsActivity : AppCompatActivity() {
                                 "Card set '$currentCollectionName' deleted",
                                 Snackbar.LENGTH_LONG
                             ).show()
+                            resetUiColl()
                         } else {
                             Snackbar.make(binding.root, "Deletion failed", Snackbar.LENGTH_LONG)
                                 .show()
@@ -86,6 +87,7 @@ class SettingsActivity : AppCompatActivity() {
                                 "Card set '${dialogBinding.editTextDialog.text}' created",
                                 Snackbar.LENGTH_LONG
                             ).show()
+                            resetUiColl()
                         } else {
                             Snackbar.make(binding.root, "Creation failed", Snackbar.LENGTH_LONG)
                                 .show()
@@ -97,36 +99,26 @@ class SettingsActivity : AppCompatActivity() {
                 .create().show()
         }
 
-        binding.flSwitchCollection.setOnClickListener {
-            val dialogBinding = DialogTextEditBinding.inflate(layoutInflater)
-            AlertDialog.Builder(this)
-                .setTitle("Enter new card set name")
-                .setView(dialogBinding.root)
-                .setPositiveButton("Switch") { dialog, _ ->
-                    CoroutineScope(Dispatchers.IO).launch {
-                        if (viewModel.switchCollection(dialogBinding.editTextDialog.text.toString())) {
-                            Snackbar.make(
-                                binding.root,
-                                "Switched to set '${dialogBinding.editTextDialog.text}'",
-                                Snackbar.LENGTH_LONG
-                            ).show()
-                        } else {
-                            Snackbar.make(binding.root, "Switch failed", Snackbar.LENGTH_LONG)
-                                .show()
-                        }
-                    }
-                    dialog.dismiss()
-                }
-                .setNegativeButton("Cancel") { dialog, _ -> dialog.dismiss() }
-                .create().show()
+        binding.tvSwitchCollection.text = "Current Card Set: ${viewModel.getCurrentCollectionName()}"
+
+        CoroutineScope(Dispatchers.IO).launch {
+            val setSpinnerArrayAdapter: ArrayAdapter<*> = ArrayAdapter<String>(
+                this@SettingsActivity,
+                android.R.layout.simple_spinner_dropdown_item,
+                listOf("") + viewModel.getAllCollectionNames()
+            )
+            binding.spinnerSet.setAdapter(setSpinnerArrayAdapter)
         }
 
-        binding.flSettingsShowCurrentSetName.setOnClickListener {
-            Snackbar.make(
-                binding.root,
-                "Current set is '${viewModel.getCurrentCollectionName()}'",
-                Snackbar.LENGTH_LONG
-            ).show()
+        binding.buttonSetSave.setOnClickListener {
+            CoroutineScope(Dispatchers.IO).launch {
+                if (viewModel.switchCollection(binding.spinnerSet.selectedItem.toString())) {
+                    resetUiColl()
+                } else {
+                    Snackbar.make(binding.root, "Switch failed", Snackbar.LENGTH_LONG)
+                        .show()
+                }
+            }
         }
 
         CoroutineScope(Dispatchers.IO).launch {
@@ -139,7 +131,7 @@ class SettingsActivity : AppCompatActivity() {
             val spinnerArrayAdapter: ArrayAdapter<*> = ArrayAdapter<String>(
                 this,
                 android.R.layout.simple_spinner_dropdown_item,
-                textToSpeech.availableLanguages.toList()
+                listOf("") + textToSpeech.availableLanguages.toList()
                     .map { "${it.language}-${it.country}-${it.variant}" }.sorted()
             )
             binding.spinnerTitleVoice.setAdapter(spinnerArrayAdapter)
@@ -158,6 +150,10 @@ class SettingsActivity : AppCompatActivity() {
             )
         }
 
+    }
+
+    private fun resetUiColl() {
+        binding.tvSwitchCollection.text = "Current Card Set: ${viewModel.getCurrentCollectionName()}"
     }
 
     private fun saveItemSelectedVoiceSpinner(titleOrBody: String, voice: String) {

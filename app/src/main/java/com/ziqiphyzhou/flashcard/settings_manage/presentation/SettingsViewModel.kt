@@ -6,6 +6,7 @@ import com.ziqiphyzhou.flashcard.shared.business.CurrentCollectionManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.util.ArrayList
 import javax.inject.Inject
 
 @HiltViewModel
@@ -43,6 +44,12 @@ class SettingsViewModel @Inject constructor(
     suspend fun getVoices(): Pair<String,String> {
         return withContext(Dispatchers.IO) {
             curColl.getVoices() ?: Pair("","")
+        }
+    }
+
+    suspend fun getAllCollectionNames(): List<String> {
+        return withContext(Dispatchers.IO) {
+            collManager.getAllCollectionNames()
         }
     }
 

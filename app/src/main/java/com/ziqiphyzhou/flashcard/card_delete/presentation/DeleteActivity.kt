@@ -58,6 +58,15 @@ class DeleteActivity : AppCompatActivity() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        val view = binding.editTextSearchForDelete
+        view.clearComposingText()
+        view.requestFocus()
+        val imm = getSystemService(InputMethodManager::class.java)
+        imm.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT)
+    }
+
     fun editCard(id: String, title: String, body: String) {
         val intent = Intent(this, CardEditActivity::class.java)
         intent.putExtra("id", id)

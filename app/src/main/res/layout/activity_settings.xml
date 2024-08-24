@@ -37,20 +37,6 @@
             android:paddingRight="12dp">
 
             <FrameLayout
-                android:id="@+id/fl_settings_show_current_set_name"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:padding="12dp">
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Show Current Card Set Name"
-                    android:textSize="20sp" />
-
-            </FrameLayout>
-
-            <FrameLayout
                 android:id="@+id/fl_settings_open_import_export"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -99,19 +85,45 @@
                 android:padding="12dp">
 
                 <TextView
+                    android:id="@+id/tv_switch_collection"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Switch Card Set"
-                    android:textSize="20sp" />
+                    android:textSize="20sp"
+                    tools:text="Current Card Set" />
 
             </FrameLayout>
 
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingLeft="48dp">
+
+                <Spinner
+                    android:id="@+id/spinner_set"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/button_set_save"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/button_save"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
             <LinearLayout
-                android:orientation="horizontal"
                 android:id="@+id/fl_title_voice"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:gravity="center_vertical"
+                android:orientation="horizontal"
                 android:padding="12dp">
 
 
@@ -119,45 +131,42 @@
                     android:id="@+id/tv_title_voice"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    tools:text="Current Title Voice: 00-AA-00"
-                    android:textSize="20sp"/>
+                    android:textSize="20sp"
+                    tools:text="Current Title Voice: 00-AA-00" />
 
             </LinearLayout>
 
-            <LinearLayout
-                android:orientation="horizontal"
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:gravity="center_vertical"
                 android:paddingLeft="48dp">
-
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="reset to"
-                    android:textSize="20sp"/>
 
                 <Spinner
                     android:id="@+id/spinner_title_voice"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
+                    android:layout_height="wrap_content"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/button_title_voice_save"
                     style="@style/Widget.Material3.Button.TextButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/button_save"/>
+                    android:text="@string/button_save"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
-            </LinearLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
             <LinearLayout
-                android:orientation="horizontal"
                 android:id="@+id/fl_body_voice"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:gravity="center_vertical"
+                android:orientation="horizontal"
                 android:padding="12dp">
 
 
@@ -165,38 +174,37 @@
                     android:id="@+id/tv_body_voice"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    tools:text="Current Body Voice: ??--"
-                    android:textSize="20sp"/>
+                    android:textSize="20sp"
+                    tools:text="Current Body Voice: ??--" />
 
             </LinearLayout>
 
-            <LinearLayout
-                android:orientation="horizontal"
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:gravity="center_vertical"
+                android:orientation="horizontal"
                 android:paddingLeft="48dp">
-
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="reset to"
-                    android:textSize="20sp"/>
 
                 <Spinner
                     android:id="@+id/spinner_body_voice"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
+                    android:layout_height="wrap_content"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/button_body_voice_save"
                     style="@style/Widget.Material3.Button.TextButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/button_save"/>
+                    android:text="@string/button_save"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
-            </LinearLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
         </LinearLayout>
 

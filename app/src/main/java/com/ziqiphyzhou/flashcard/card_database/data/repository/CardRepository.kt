@@ -29,4 +29,6 @@ interface CardRepository {
     suspend fun getLastIdWithLevelNoMoreThan(level: Int, coll: String): String
     suspend fun setVoiceToZeroCard(voice: String, titleOrBody: String, coll: String): Boolean
 
+    suspend fun getAllCollectionNames(): List<String>
+
 }

@@ -20,4 +20,9 @@ class CollectionManager @Inject constructor(
             true
         } else false
     }
+
+    suspend fun getAllCollectionNames(): List<String> {
+        return repo.getAllCollectionNames()
+    }
+
 }

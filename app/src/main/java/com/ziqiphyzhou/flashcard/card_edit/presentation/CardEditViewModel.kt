@@ -17,10 +17,17 @@ class CardEditViewModel @Inject constructor(private val cardEditor: CardEditor) 
     val message: LiveData<Event<String>>
         get() = _message
 
+    private val _saved = MutableLiveData<Event<Boolean>>()
+    val saved: LiveData<Event<Boolean>>
+        get() = _saved
+
     fun edit(id: String, title: String, body: String) {
         viewModelScope.launch {
             val saveTitle = title.takeIf { it != "" } ?: "null"
-            if (cardEditor.editCard(id, saveTitle, body)) _message.value = Event("Changes in \"${saveTitle}\" saved. ")
+            if (cardEditor.editCard(id, saveTitle, body)) {
+                _message.value = Event("Changes in \"${saveTitle}\" saved. ")
+                _saved.value = Event(true)
+            }
             else _message.value = Event("Edit failed. ")
         }
     }
