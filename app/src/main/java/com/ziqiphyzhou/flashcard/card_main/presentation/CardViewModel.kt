@@ -49,7 +49,7 @@ class CardViewModel @Inject constructor(
                 var displayedTitle = topCard.title
                 var displayedBody = topCard.body
                 // Swap body and title if the card is remembered well enough
-                if ((topCard.state && topCard.level >= 3) || (!topCard.state && topCard.level >= 2)) {
+                if ((topCard.state && topCard.level >= 2) || (!topCard.state && topCard.level >= 1)) {
                     displayedTitle = topCard.body
                     displayedBody = topCard.title
                 }

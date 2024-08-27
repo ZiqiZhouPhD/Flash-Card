@@ -67,6 +67,9 @@ class CardEditActivity : AppCompatActivity() {
         viewModel.saved.observe(this) { event ->
             event.getContentIfNotHandled()?.let {
                 changeSaved = it
+                currentFocus?.clearFocus()
+                val inputMethodManager = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+                inputMethodManager.hideSoftInputFromWindow(binding.root.windowToken, 0)
             }
         }
 
