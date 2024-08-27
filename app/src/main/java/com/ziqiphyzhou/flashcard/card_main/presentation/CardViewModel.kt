@@ -46,7 +46,14 @@ class CardViewModel @Inject constructor(
             try {
                 _voices.value = Event(cardDealer.getVoices())
                 val topCard = cardDealer.getTop()
-                _viewState.postValue(CardViewState.ShowTitleOnly(topCard.title, topCard.body))
+                var displayedTitle = topCard.title
+                var displayedBody = topCard.body
+                // Swap body and title if the card is remembered well enough
+                if ((topCard.state && topCard.level >= 3) || (!topCard.state && topCard.level >= 2)) {
+                    displayedTitle = topCard.body
+                    displayedBody = topCard.title
+                }
+                _viewState.postValue(CardViewState.ShowTitleOnly(displayedTitle, displayedBody))
             } catch (e: CardDealer.Companion.CollectionEmptyException) {
                 _viewState.postValue(CardViewState.CollectionEmpty)
             }

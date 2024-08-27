@@ -1,6 +1,8 @@
 package com.ziqiphyzhou.flashcard.card_edit.presentation
 
+import android.content.Context
 import android.os.Bundle
+import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
@@ -40,29 +42,20 @@ class CardEditActivity : AppCompatActivity() {
         binding.editTextEditTitle.setText(intent.getStringExtra("title"))
         binding.editTextEditBody.setText(intent.getStringExtra("body"))
 
-        binding.buttonSave.setOnClickListener {
+        binding.buttonSave.setOnClickListener { saveChanges() }
 
-            val titleText = binding.editTextEditTitle.text.toString()
-            val bodyText = binding.editTextEditBody.text.toString()
-
-            val cardId = intent.getStringExtra("id")
-            CoroutineScope(Dispatchers.Main).launch {
-                if (cardId != null) {
-                    viewModel.edit(cardId, titleText, bodyText)
-                } else {
-                    Snackbar.make(binding.root, "Edit failed. ", Snackbar.LENGTH_LONG).show()
-                }
+        binding.editTextEditTitle.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_NEXT) {
+                binding.editTextEditBody.requestFocus()
             }
+            false
+        }
 
-            binding.editTextEditTitle.text.clear()
-            binding.editTextEditBody.text.clear()
-
-            binding.buttonSave.isEnabled = false
-
-            currentFocus?.clearFocus()
-            val inputMethodManager = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
-            inputMethodManager.hideSoftInputFromWindow(binding.root.windowToken, 0)
-
+        binding.editTextEditBody.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_SEND) {
+                saveChanges()
+            }
+            true
         }
 
         viewModel.message.observe(this) { event ->
@@ -79,15 +72,35 @@ class CardEditActivity : AppCompatActivity() {
 
         binding.topBarCardEdit.setNavigationOnClickListener {
             if (changeSaved) this@CardEditActivity.onBackPressedDispatcher.onBackPressed()
-            AlertDialog.Builder(this)
-                .setTitle("Changes not saved!")
-                .setMessage("Discard changes and exit?")
-                .setPositiveButton("Cancel") { dialog, _ -> dialog.dismiss() }
-                .setNegativeButton("Exit") { _, _ ->
-                    this@CardEditActivity.onBackPressedDispatcher.onBackPressed()
-                }
-                .create().show()
+            else {
+                AlertDialog.Builder(this)
+                    .setTitle("Changes not saved!")
+                    .setMessage("Discard changes and exit editing?")
+                    .setPositiveButton("Cancel") { dialog, _ -> dialog.dismiss() }
+                    .setNegativeButton("Exit") { _, _ ->
+                        this@CardEditActivity.onBackPressedDispatcher.onBackPressed()
+                    }
+                    .setNeutralButton("Save") { dialog, _ ->
+                        saveChanges()
+                        dialog.dismiss()
+                    }
+                    .create().show()
+            }
         }
 
+    }
+
+    private fun saveChanges() {
+        val titleText = binding.editTextEditTitle.text.toString()
+        val bodyText = binding.editTextEditBody.text.toString()
+
+        val cardId = intent.getStringExtra("id")
+        CoroutineScope(Dispatchers.Main).launch {
+            if (cardId != null) {
+                viewModel.edit(cardId, titleText, bodyText)
+            } else {
+                Snackbar.make(binding.root, "Edit failed. ", Snackbar.LENGTH_LONG).show()
+            }
+        }
     }
 }

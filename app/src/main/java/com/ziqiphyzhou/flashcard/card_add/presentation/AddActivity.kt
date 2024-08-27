@@ -78,9 +78,9 @@ class AddActivity : AppCompatActivity() {
             true
         }
 
-        viewModel.updateAddAfterThisId()
-
         binding.editTextAddTitle.requestFocus()
+
+        viewModel.updateAddAfterThisId()
 
     }
 

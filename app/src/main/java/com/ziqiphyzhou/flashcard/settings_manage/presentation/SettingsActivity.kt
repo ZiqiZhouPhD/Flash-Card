@@ -102,23 +102,35 @@ class SettingsActivity : AppCompatActivity() {
         binding.tvSwitchCollection.text = "Current Card Set: ${viewModel.getCurrentCollectionName()}"
 
         CoroutineScope(Dispatchers.IO).launch {
+            val allCollections = viewModel.getAllCollectionNames()
             val setSpinnerArrayAdapter: ArrayAdapter<*> = ArrayAdapter<String>(
                 this@SettingsActivity,
                 android.R.layout.simple_spinner_dropdown_item,
-                listOf("") + viewModel.getAllCollectionNames()
+                allCollections
             )
             binding.spinnerSet.setAdapter(setSpinnerArrayAdapter)
+            binding.spinnerSet.setSelection(allCollections.indexOf(viewModel.getCurrentCollectionName()))
         }
 
-        binding.buttonSetSave.setOnClickListener {
-            CoroutineScope(Dispatchers.IO).launch {
-                if (viewModel.switchCollection(binding.spinnerSet.selectedItem.toString())) {
-                    resetUiColl()
-                } else {
-                    Snackbar.make(binding.root, "Switch failed", Snackbar.LENGTH_LONG)
-                        .show()
+        binding.spinnerSet.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                if (binding.spinnerSet.getItemAtPosition(position).toString() != "") {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        if (viewModel.switchCollection(
+                                binding.spinnerSet.getItemAtPosition(position).toString()
+                            )
+                        ) {
+                            resetUiColl()
+                        } else {
+                            Snackbar.make(binding.root, "Switch failed", Snackbar.LENGTH_LONG)
+                                .show()
+                        }
+                    }
                 }
             }
+
         }
 
         CoroutineScope(Dispatchers.IO).launch {
