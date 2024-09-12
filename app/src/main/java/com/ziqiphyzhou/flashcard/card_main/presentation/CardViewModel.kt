@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ziqiphyzhou.flashcard.card_main.business.CardDealer
 import com.ziqiphyzhou.flashcard.card_main.business.DailyCounter
+import com.ziqiphyzhou.flashcard.shared.SHOW_BODY_AFTER_LEVEL
 import com.ziqiphyzhou.flashcard.shared.presentation.view_model.Event
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -49,7 +50,8 @@ class CardViewModel @Inject constructor(
                 var displayedTitle = topCard.title
                 var displayedBody = topCard.body
                 // Swap body and title if the card is remembered well enough
-                if ((topCard.state && topCard.level >= 2) || (!topCard.state && topCard.level >= 1)) {
+                if ((topCard.state && topCard.level >= SHOW_BODY_AFTER_LEVEL)
+                    || (!topCard.state && topCard.level >= SHOW_BODY_AFTER_LEVEL - 1)) {
                     displayedTitle = topCard.body
                     displayedBody = topCard.title
                 }
