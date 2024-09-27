@@ -84,4 +84,6 @@ class CardViewModel @Inject constructor(
         }
     }
 
+    suspend fun getCollName() = cardDealer.getCollName()
+
 }

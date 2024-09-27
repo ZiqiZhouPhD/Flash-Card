@@ -8,6 +8,7 @@ import com.ziqiphyzhou.flashcard.card_database.data.repository.CardRepository
 import com.ziqiphyzhou.flashcard.shared.BOOKMARKS_JSON_DEFAULT
 import com.ziqiphyzhou.flashcard.shared.BOOKMARKS_SHAREDPREF_KEY
 import com.ziqiphyzhou.flashcard.shared.LEVEL_CAP
+import com.ziqiphyzhou.flashcard.shared.SHOW_BODY_AFTER_LEVEL
 import com.ziqiphyzhou.flashcard.shared.business.Card
 import com.ziqiphyzhou.flashcard.shared.business.CurrentCollectionManager
 import kotlinx.coroutines.CoroutineScope
@@ -64,6 +65,9 @@ class CardDealerImpl @Inject constructor(
         return withContext(Dispatchers.IO) {
             curColl.get()?.let { coll ->
 
+                var stateIsFalseAndLevelIsShowBodyAfterLevelAndRemembered = false
+                // if true, move level up 1 to SHOW_BODY_AFTER_LEVEL, set state to false, and bury with SHOW_BODY_AFTER_LEVEL - 1
+
                 val topCard = repository.getTop(coll)
                 if (topCard.id == "") return@withContext
 
@@ -71,7 +75,13 @@ class CardDealerImpl @Inject constructor(
                     true -> {
                         when (topCard.state) {
                             true -> topCard.level += 1
-                            false -> topCard.state = true
+                            false -> {
+                                if (topCard.level == SHOW_BODY_AFTER_LEVEL - 1) {
+                                    stateIsFalseAndLevelIsShowBodyAfterLevelAndRemembered = true
+                                    topCard.level += 1
+                                }
+                                else topCard.state = true
+                            }
                         }
                     }
 
@@ -89,6 +99,7 @@ class CardDealerImpl @Inject constructor(
                 var buryLevel = 0 // if forgot
                 if (isRemembered) {
                     buryLevel = getTrimLevelByBookmarkListSize(topCard)
+                    if (stateIsFalseAndLevelIsShowBodyAfterLevelAndRemembered) buryLevel -= 1
                 }
                 val insertAfterThisId = bookmarkList[buryLevel]
 
@@ -117,6 +128,10 @@ class CardDealerImpl @Inject constructor(
             }
             sharedPref.edit { putString(BOOKMARKS_SHAREDPREF_KEY, bookmarksJson) }
         } ?: throw CardDealer.Companion.CollectionMissingException()
+    }
+
+    override suspend fun getCollName(): String? {
+        return curColl.get()
     }
 
 }

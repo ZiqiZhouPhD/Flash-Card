@@ -81,25 +81,25 @@
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_remember"
         style="@style/Widget.Material3.Button.OutlinedButton"
-        android:layout_width="180dp"
+        android:layout_width="match_parent"
         android:layout_height="96dp"
+        android:layout_marginHorizontal="48dp"
         android:layout_marginBottom="36dp"
         android:text="@string/btn_remember"
         android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="@id/ll_card"
-        app:layout_constraintBottom_toTopOf="@id/btn_forgot"
-        app:layout_constraintRight_toRightOf="@id/btn_forgot" />
+        app:layout_constraintBottom_toTopOf="@id/btn_forgot" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_forgot"
         style="@style/Widget.Material3.Button.OutlinedButton"
-        android:layout_width="180dp"
+        android:layout_width="match_parent"
         android:layout_height="96dp"
+        android:layout_marginHorizontal="48dp"
         android:layout_marginRight="48dp"
         android:text="@string/btn_forget"
         android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="@id/btn_remember" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton

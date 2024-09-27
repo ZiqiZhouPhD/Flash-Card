@@ -11,7 +11,7 @@
     <string name="button_save">Save</string>
     <string name="btn_remember">Know it!</string>
     <string name="btn_hesitate">Hmm…</string>
-    <string name="btn_forget">Dunno…</string>
+    <string name="btn_forget">I forgot…</string>
     <string name="edit_text_hint_delete_search">Search</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>

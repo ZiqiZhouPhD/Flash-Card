@@ -8,6 +8,7 @@ interface CardDealer {
     suspend fun getTop(): Card
     suspend fun buryCard(isRemembered: Boolean)
     suspend fun setupDealer()
+    suspend fun getCollName(): String?
 
     companion object {
         class CollectionMissingException: Exception()

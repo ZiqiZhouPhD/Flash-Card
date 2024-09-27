@@ -182,27 +182,34 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
             setButtonEnabled(false)
         }
 
-        when (viewState) {
-            is CardViewState.ShowTitleOnly -> {
-                setToDisplayOnly(viewState.title)
-                cardBodyText = viewState.body
-                binding.btnForgot.text = resources.getString(R.string.btn_hesitate)
-                if (!voiceMode) setButtonEnabled(true)
-                else {
-                    mediaButtonState = true
-                    textToSpeech.setLanguage(titleVoice)
-                    textToSpeech.speak(binding.tvTitle.text, TextToSpeech.QUEUE_FLUSH, null, null)
+        CoroutineScope(Dispatchers.Main).launch {
+            when (viewState) {
+                is CardViewState.ShowTitleOnly -> {
+                    setToDisplayOnly(viewState.title)
+                    cardBodyText = viewState.body
+                    binding.btnForgot.text = resources.getString(R.string.btn_hesitate)
+                    if (!voiceMode) setButtonEnabled(true)
+                    else {
+                        mediaButtonState = true
+                        textToSpeech.setLanguage(titleVoice)
+                        textToSpeech.speak(
+                            binding.tvTitle.text,
+                            TextToSpeech.QUEUE_FLUSH,
+                            null,
+                            null
+                        )
+                    }
                 }
-            }
 
-            CardViewState.Freeze -> {
-                setTextBlur(BlurMaskFilter(8f, BlurMaskFilter.Blur.NORMAL))
-                setButtonEnabled(false)
-            }
+                CardViewState.Freeze -> {
+                    setTextBlur(BlurMaskFilter(8f, BlurMaskFilter.Blur.NORMAL))
+                    setButtonEnabled(false)
+                }
 
-            CardViewState.Init -> setToDisplayOnly("Tap to start")
-            CardViewState.CollectionEmpty -> setToDisplayOnly("Set empty, add cards to start")
-            CardViewState.CollectionMissing -> setToDisplayOnly("Switch or add a card set to start")
+                CardViewState.Init -> setToDisplayOnly("Set '${viewModel.getCollName()}'")
+                CardViewState.CollectionEmpty -> setToDisplayOnly("Set '${viewModel.getCollName()}' is empty")
+                CardViewState.CollectionMissing -> setToDisplayOnly("No set selected")
+            }
         }
     }
 
