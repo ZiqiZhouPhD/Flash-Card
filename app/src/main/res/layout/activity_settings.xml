@@ -36,6 +36,59 @@
             android:paddingLeft="12dp"
             android:paddingRight="12dp">
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="12dp">
+
+                <TextView
+                    android:id="@+id/tv_switch_collection"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Switch Set"
+                    android:textSize="20sp" />
+
+                <Spinner
+                    android:id="@+id/spinner_set"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+            </LinearLayout>
+
+            <FrameLayout
+                android:id="@+id/fl_settings_add"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="12dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Add Cards"
+                    android:textSize="20sp" />
+
+            </FrameLayout>
+
+            <FrameLayout
+                android:id="@+id/fl_settings_edit"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="12dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Edit Cards"
+                    android:textSize="20sp" />
+
+            </FrameLayout>
+
             <FrameLayout
                 android:id="@+id/fl_settings_open_import_export"
                 android:layout_width="match_parent"
@@ -51,20 +104,6 @@
             </FrameLayout>
 
             <FrameLayout
-                android:id="@+id/fl_delete_collection"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:padding="12dp">
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Delete the Current Cardset"
-                    android:textSize="20sp" />
-
-            </FrameLayout>
-
-            <FrameLayout
                 android:id="@+id/fl_add_collection"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -73,40 +112,24 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Create a New Card Set"
+                    android:text="Create New Set"
                     android:textSize="20sp" />
 
             </FrameLayout>
 
             <FrameLayout
-                android:id="@+id/fl_switch_collection"
+                android:id="@+id/fl_delete_collection"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:padding="12dp">
 
                 <TextView
-                    android:id="@+id/tv_switch_collection"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textSize="20sp"
-                    tools:text="Current Card Set" />
+                    android:text="Delete Current Set"
+                    android:textSize="20sp" />
 
             </FrameLayout>
-
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
-
-                <Spinner
-                    android:id="@+id/spinner_set"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintLeft_toLeftOf="parent"
-                    app:layout_constraintRight_toRightOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-            </androidx.constraintlayout.widget.ConstraintLayout>
 
             <LinearLayout
                 android:id="@+id/fl_title_voice"

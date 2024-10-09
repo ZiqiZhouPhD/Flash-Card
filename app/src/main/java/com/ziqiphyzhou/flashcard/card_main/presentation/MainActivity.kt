@@ -43,7 +43,9 @@ import kotlinx.coroutines.launch
 import java.util.Locale
 
 @AndroidEntryPoint // added before any activity/fragment for dependency injection
-class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
+class MainActivity : AppCompatActivity()
+//    , PopupMenu.OnMenuItemClickListener
+{
 
     private lateinit var binding: ActivityMainBinding
     private var cardBodyText: String? = null
@@ -95,7 +97,10 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
             }
         }
 
-        binding.fab.setOnClickListener { showMenu(it) }
+        binding.fab.setOnClickListener {
+//            showMenu(it)
+            startActivity(Intent(this, SettingsActivity::class.java))
+        }
 
         binding.fab.setOnLongClickListener { toggleVoiceMode() }
 
@@ -206,37 +211,37 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
                     setButtonEnabled(false)
                 }
 
-                CardViewState.Init -> setToDisplayOnly("Set '${viewModel.getCollName()}'")
-                CardViewState.CollectionEmpty -> setToDisplayOnly("Set '${viewModel.getCollName()}' is empty")
+                CardViewState.Init -> setToDisplayOnly("'${viewModel.getCollName()}'")
+                CardViewState.CollectionEmpty -> setToDisplayOnly("'${viewModel.getCollName()}' is empty")
                 CardViewState.CollectionMissing -> setToDisplayOnly("No set selected")
             }
         }
     }
 
-    private fun showMenu(v: View) {
-        PopupMenu(this, v).apply { // MainActivity implements OnMenuItemClickListener.
-            setOnMenuItemClickListener(this@MainActivity)
-            inflate(R.menu.menu_main)
-            show()
-        }
-    }
-
-    override fun onMenuItemClick(item: MenuItem): Boolean {
-        return when (item.itemId) {
-
-            R.id.menu_item_delete -> {
-                startActivity(Intent(this, DeleteActivity::class.java))
-                true
-            }
-
-            R.id.menu_item_settings -> {
-                startActivity(Intent(this, SettingsActivity::class.java))
-                true
-            }
-
-            else -> false
-        }
-    }
+//    private fun showMenu(v: View) {
+//        PopupMenu(this, v).apply { // MainActivity implements OnMenuItemClickListener.
+//            setOnMenuItemClickListener(this@MainActivity)
+//            inflate(R.menu.menu_main)
+//            show()
+//        }
+//    }
+//
+//    override fun onMenuItemClick(item: MenuItem): Boolean {
+//        return when (item.itemId) {
+//
+//            R.id.menu_item_delete -> {
+//                startActivity(Intent(this, DeleteActivity::class.java))
+//                true
+//            }
+//
+//            R.id.menu_item_settings -> {
+//                startActivity(Intent(this, SettingsActivity::class.java))
+//                true
+//            }
+//
+//            else -> false
+//        }
+//    }
 
     private fun toggleVoiceMode(): Boolean {
         voiceMode = !voiceMode

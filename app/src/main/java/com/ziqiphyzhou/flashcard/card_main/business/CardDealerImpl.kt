@@ -50,6 +50,7 @@ class CardDealerImpl @Inject constructor(
 
     private suspend fun initBookmarkIdList(insertPosList: List<Int>) {
         withContext(Dispatchers.IO) {
+//            curColl.set("arabic")
             curColl.get()?.let { coll ->
                 bookmarkList.clear()
                 bookmarkList.addAll(repository.findInsertionPosIds(insertPosList, coll))
