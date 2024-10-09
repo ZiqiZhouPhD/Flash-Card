@@ -3,8 +3,8 @@ package com.ziqiphyzhou.flashcard.settings_manage.presentation
 import android.content.Intent
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
-import android.view.View
-import android.widget.AdapterView
+import android.view.WindowManager
+import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
@@ -31,7 +31,7 @@ class SettingsActivity : AppCompatActivity() {
     private val viewModel: SettingsViewModel by viewModels()
     private lateinit var textToSpeech: TextToSpeech
     private val noSetSelected = "(none)"
-    private var blockSwitchingSet = true
+    private lateinit var setSpinnerArrayAdapter: ArrayAdapter<String>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,30 +62,34 @@ class SettingsActivity : AppCompatActivity() {
 
         binding.flAddCollection.setOnClickListener {
             val dialogBinding = DialogTextEditBinding.inflate(layoutInflater)
-            AlertDialog.Builder(this)
+            val dialog = AlertDialog.Builder(this)
                 .setTitle("Enter new card set name")
                 .setView(dialogBinding.root)
                 .setPositiveButton("Create") { dialog, _ ->
                     CoroutineScope(Dispatchers.IO).launch {
-                        if (viewModel.addCollection(dialogBinding.editTextDialog.text.toString())) {
+                        if (dialogBinding.editTextDialog.text.toString() !in getAllSetName()
+                            && viewModel.addCollection(dialogBinding.editTextDialog.text.toString())) {
                             Snackbar.make(
                                 binding.root,
                                 "Card set '${dialogBinding.editTextDialog.text}' created",
                                 Snackbar.LENGTH_LONG
                             ).show()
-                        } else {
-                            Snackbar.make(binding.root, "Creation failed", Snackbar.LENGTH_LONG)
-                                .show()
-                        }
+                            setSetSelectionUi()
+                        } else Snackbar.make(binding.root, "Creation failed", Snackbar.LENGTH_LONG).show()
                     }
                     dialog.dismiss()
                 }
                 .setNegativeButton("Cancel") { dialog, _ -> dialog.dismiss() }
-                .create().show()
+                .create()
+            dialog.show()
+
+            dialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
+            dialogBinding.editTextDialog.requestFocus()
+
         }
 
         binding.flDeleteCollection.setOnClickListener {
-            val currentCollectionName = viewModel.getCurrentCollectionName()
+            val currentCollectionName = getCurrentSetName()
             AlertDialog.Builder(this)
                 .setTitle("Warning!")
                 .setMessage("You are about to permanently delete set '$currentCollectionName'. You will not be able to retrieve the data!")
@@ -97,6 +101,7 @@ class SettingsActivity : AppCompatActivity() {
                                 "Card set '$currentCollectionName' deleted",
                                 Snackbar.LENGTH_LONG
                             ).show()
+                            setSetSelectionUi()
                         } else {
                             Snackbar.make(binding.root, "Deletion failed", Snackbar.LENGTH_LONG)
                                 .show()
@@ -108,55 +113,34 @@ class SettingsActivity : AppCompatActivity() {
                 .create().show()
         }
 
-//        binding.tvSwitchCollection.text = "Current Card Set: ${viewModel.getCurrentCollectionName()}"
+        setSpinnerArrayAdapter = ArrayAdapter<String>(
+            this@SettingsActivity,
+            android.R.layout.simple_spinner_dropdown_item,
+            mutableListOf()
+        )
+        binding.spinnerSet.setAdapter(setSpinnerArrayAdapter)
 
-        setSetSelectionSpinner()
+        setSetSelectionUi()
 
-//        CoroutineScope(Dispatchers.IO).launch {
-//            val allCollections = listOf(noSetSellected) + viewModel.getAllCollectionNames()
-//            val setSpinnerArrayAdapter: ArrayAdapter<*> = ArrayAdapter<String>(
-//                this@SettingsActivity,
-//                android.R.layout.simple_spinner_dropdown_item,
-//                allCollections
-//            )
-//            binding.spinnerSet.setAdapter(setSpinnerArrayAdapter)
-//            binding.spinnerSet.setSelection(allCollections.indexOf(viewModel.getCurrentCollectionName()))
-//        }
-
-        binding.spinnerSet.onItemSelectedListener =
-            object : AdapterView.OnItemSelectedListener {
-                override fun onNothingSelected(parent: AdapterView<*>?) {}
-
-                override fun onItemSelected(
-                    parent: AdapterView<*>?,
-                    view: View?,
-                    position: Int,
-                    id: Long
-                ) {
-                    if (blockSwitchingSet) { blockSwitchingSet = false }
-                    else {
-                        CoroutineScope(Dispatchers.IO).launch {
-                            if (viewModel.switchCollection(
-                                    binding.spinnerSet.getItemAtPosition(position).toString()
-                                )
-                            ) {
-                                Snackbar.make(
-                                    binding.root,
-                                    "Switch succeeded",
-                                    Snackbar.LENGTH_LONG
-                                ).show()
-                            } else {
-                                setSetSelectionSpinner()
-                                Snackbar.make(
-                                    binding.root,
-                                    "Switch failed",
-                                    Snackbar.LENGTH_LONG
-                                ).show()
-                            }
-                        }
-                    }
-                }
+        binding.buttonSetSwitch.setOnClickListener {
+            CoroutineScope(Dispatchers.IO).launch {
+                if (viewModel.switchCollection(
+                    binding.spinnerSet.selectedItem.toString().takeUnless { it == noSetSelected }
+                )) Snackbar.make(binding.root, "Switch succeeded", Snackbar.LENGTH_LONG).show()
+                else Snackbar.make(binding.root, "Switch failed", Snackbar.LENGTH_LONG).show()
+                setSetSelectionUi()
             }
+        }
+
+        binding.buttonSetPrevious.setOnClickListener {
+            CoroutineScope(Dispatchers.IO).launch {
+                if (viewModel.switchCollection(
+                    getPreviousSetName().takeUnless { it == noSetSelected }
+                )) Snackbar.make(binding.root, "Switch succeeded", Snackbar.LENGTH_LONG).show()
+                else Snackbar.make(binding.root, "Switch failed", Snackbar.LENGTH_LONG).show()
+                setSetSelectionUi()
+            }
+        }
 
         CoroutineScope(Dispatchers.IO).launch {
             val voices = viewModel.getVoices()
@@ -189,20 +173,16 @@ class SettingsActivity : AppCompatActivity() {
 
     }
 
-    private fun setSetSelectionSpinner() {
-//        binding.tvSwitchCollection.text = "Current Card Set: ${viewModel.getCurrentCollectionName()}"
-        CoroutineScope(Dispatchers.IO).launch {
-            blockSwitchingSet = true
-            val allCollections = listOf(noSetSelected) + viewModel.getAllCollectionNames()
-            val setSpinnerArrayAdapter: ArrayAdapter<*> = ArrayAdapter<String>(
-                this@SettingsActivity,
-                android.R.layout.simple_spinner_dropdown_item,
-                allCollections
-            )
-            binding.spinnerSet.setAdapter(setSpinnerArrayAdapter)
-            blockSwitchingSet = true
-            binding.spinnerSet.setSelection(allCollections.indexOf(viewModel.getCurrentCollectionName()))
-//            blockSwitchingSet = false
+    private fun setSetSelectionUi() {
+        binding.tvSetCurrent.text = "Current Set '${getCurrentSetName()}'"
+        binding.tvSetPrevious.text = "previous '${getPreviousSetName()}'"
+
+        // using Dispatchers.Main solves a fatal coroutine error, which I don't understand
+        CoroutineScope(Dispatchers.Main).launch {
+            val allCollections = getAllSetName()
+            setSpinnerArrayAdapter.clear()
+            setSpinnerArrayAdapter.addAll(allCollections)
+            binding.spinnerSet.setSelection(allCollections.indexOf(getCurrentSetName())) // default to noSetSelected
         }
     }
 
@@ -223,5 +203,9 @@ class SettingsActivity : AppCompatActivity() {
             }
         }
     }
+
+    private fun getCurrentSetName() = viewModel.getCurrentCollectionName() ?: noSetSelected
+    private fun getPreviousSetName() = viewModel.getPreviousCollectionName() ?: noSetSelected
+    private suspend fun getAllSetName() = listOf(noSetSelected) + viewModel.getAllCollectionNames()
 
 }

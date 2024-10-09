@@ -1,7 +1,6 @@
-package com.ziqiphyzhou.flashcard.collection_manager.business
+package com.ziqiphyzhou.flashcard.shared.business
 
 import com.ziqiphyzhou.flashcard.card_database.data.repository.CardRepository
-import com.ziqiphyzhou.flashcard.shared.business.CurrentCollectionManager
 import javax.inject.Inject
 
 class CollectionManager @Inject constructor(

@@ -3,8 +3,6 @@
 ## To-dos
 
 ### Immediate
-* solve spinner ui change problems after adding or deleting a collection set
-  * the spinner is buggy, need an alternative solution 
 * check card add and processing behavior when deck size is larger than insertion index
 * migrate all set related info to zero-card body as a list/dictionary, including daily count
 * new feature to distinguish between bijective set and one-way set, add setting option to change this setting (stored in the zero-card)

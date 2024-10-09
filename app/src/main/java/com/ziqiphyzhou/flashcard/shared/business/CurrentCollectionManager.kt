@@ -16,30 +16,33 @@ class CurrentCollectionManager @Inject constructor(private val repo: CardReposit
         PreferenceManager.getDefaultSharedPreferences(AppApplication.INSTANCE.applicationContext)
     private var coll: String? = getSharedPrefColl()
 
+    private val sharedPrefKeyPrevious = "coll_previous"
+    private var collPrevious: String? = getSharedPrefColl(true)
+
     // have to be careful
     // all non-null coll has to exist
     // non-existing coll is set to null
     // all use of get() should use null-safety to prevent acting on null collection
     fun get() = coll
+    fun getPrevious() = collPrevious
 
     suspend fun set(setToColl: String?): Boolean {
         return withContext(Dispatchers.IO) {
-            return@withContext setToColl?.let {
-                if (!repo.isCollectionExist(setToColl)) return@let false
-                else {
-                    coll = setToColl
-                    sharedPref.edit { putString(sharedPrefKey, setToColl) }
-                    return@let true
-                }
-            } ?: true.also {
-                coll = null
-                sharedPref.edit { putString(sharedPrefKey, "") }
+            if (setToColl != coll) {
+                collPrevious = coll
+                if (!repo.isCollectionExist(collPrevious)) collPrevious = null
+                coll = setToColl
+                if (!repo.isCollectionExist(coll)) coll = null
             }
+            sharedPref.edit { putString(sharedPrefKeyPrevious, collPrevious ?: "") }
+            sharedPref.edit { putString(sharedPrefKey, coll ?: "") }
+            true
         }
     }
 
-    private fun getSharedPrefColl(): String? {
-        val returnString = sharedPref.getString(sharedPrefKey, "")
+    private fun getSharedPrefColl(getPrevious: Boolean = false): String? {
+        var returnString = sharedPref.getString(sharedPrefKey, "")
+        if (getPrevious) returnString = sharedPref.getString(sharedPrefKeyPrevious, "")
         return if (returnString == "") null
         else returnString
     }

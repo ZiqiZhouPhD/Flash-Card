@@ -1,12 +1,11 @@
 package com.ziqiphyzhou.flashcard.settings_manage.presentation
 
 import androidx.lifecycle.ViewModel
-import com.ziqiphyzhou.flashcard.collection_manager.business.CollectionManager
+import com.ziqiphyzhou.flashcard.shared.business.CollectionManager
 import com.ziqiphyzhou.flashcard.shared.business.CurrentCollectionManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.util.ArrayList
 import javax.inject.Inject
 
 @HiltViewModel
@@ -21,9 +20,8 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
-    fun getCurrentCollectionName(): String {
-        return curColl.get().toString()
-    }
+    fun getCurrentCollectionName() = curColl.get()
+    fun getPreviousCollectionName() = curColl.getPrevious()
 
     suspend fun addCollection(coll: String): Boolean {
         return withContext(Dispatchers.IO) {
@@ -31,7 +29,7 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
-    suspend fun switchCollection(coll: String): Boolean {
+    suspend fun switchCollection(coll: String?): Boolean {
         return curColl.set(coll)
     }
 
