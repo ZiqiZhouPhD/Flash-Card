@@ -65,8 +65,4 @@ class AppModule {
         repository: CardRepository
     ): CurrentCollectionManager = CurrentCollectionManager(repository)
 
-    @Singleton // included so that a singleton is used
-    @Provides
-    fun provideDailyCounter(): DailyCounter = DailyCounter()
-
 }

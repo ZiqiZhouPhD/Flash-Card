@@ -53,13 +53,21 @@ class CurrentCollectionManager @Inject constructor(private val repo: CardReposit
         }
     }
 
-    suspend fun getVoices(): Pair<String,String>? {
+    suspend fun setDailyCount(date: String, count: Int): Boolean {
         return withContext(Dispatchers.IO) {
-            coll?.let {
-                val zeroCard = repo.getZero(it)
-                return@let Pair(zeroCard.title, zeroCard.body)
-            }
+            coll?.let { repo.setDailyCount(it, date, count) } ?: false
         }
+    }
+
+    // the third and fourth element of zero card's body text
+    suspend fun getVoices(): Pair<String,String> {
+        return repo.getVoices(coll)
+    }
+
+    // the first and second element of zero card's body text
+    // returns date and count
+    suspend fun getDailyCount(): Pair<String,Int> {
+        return repo.getDailyCount(coll)
     }
 
 }

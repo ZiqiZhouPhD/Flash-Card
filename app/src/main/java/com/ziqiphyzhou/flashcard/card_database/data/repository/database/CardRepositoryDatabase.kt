@@ -270,9 +270,15 @@ class CardRepositoryDatabase @Inject constructor(private val cardDao: CardDao) :
     override suspend fun setVoiceToZeroCard(voice: String, titleOrBody: String, coll: String): Boolean {
         return withContext(Dispatchers.IO) {
             val zeroCard = cardDao.getById("@$coll")
-            when (titleOrBody) {
-                "title" -> zeroCard.title = voice
-                "body" -> zeroCard.body = voice
+            val collInfo = zeroCard.body.split(",").toMutableList()
+            if (collInfo.size == 4) {
+                when (titleOrBody) {
+                    "title" -> collInfo[2] = voice
+                    "body" -> collInfo[3] = voice
+                }
+                zeroCard.body = collInfo.joinToString(",")
+            } else {
+                zeroCard.body = ",,,"
             }
             cardDao.updateCard(zeroCard)
             return@withContext true
@@ -331,6 +337,48 @@ class CardRepositoryDatabase @Inject constructor(private val cardDao: CardDao) :
             }
         }
         return false
+    }
+
+    private suspend fun getCurCollInfoOnZeroCard(coll: String?): List<String>? {
+        coll?.let {
+            val zeroCard = getZero(coll)
+            return zeroCard.body.split(",")
+        }
+        return null
+    }
+
+    // the third and fourth element of zero card's body text
+    override suspend fun getVoices(coll: String?): Pair<String,String> {
+        getCurCollInfoOnZeroCard(coll)?.let { if (it.size >= 4) return Pair(it[2], it[3]) }
+        return Pair("","")
+    }
+
+    // the first and second element of zero card's body text
+    // returns date and count
+    override suspend fun getDailyCount(coll: String?): Pair<String,Int> {
+        val curCollInfo = getCurCollInfoOnZeroCard(coll)
+        try {
+            curCollInfo?.let { if (it.size >= 2) return Pair(it[0], it[1].toInt()) }
+        } catch (e: NumberFormatException) {
+            // return empty pair, handled below
+        }
+        return Pair("",0)
+    }
+
+    override suspend fun setDailyCount(coll: String, date: String, count: Int): Boolean {
+        return withContext(Dispatchers.IO) {
+            val zeroCard = cardDao.getById("@$coll")
+            val collInfo = zeroCard.body.split(",").toMutableList()
+            if (collInfo.size == 4) {
+                collInfo[0] = date
+                collInfo[1] = count.toString()
+                zeroCard.body = collInfo.joinToString(",")
+            } else {
+                zeroCard.body = ",,,"
+            }
+            cardDao.updateCard(zeroCard)
+            return@withContext true
+        }
     }
 
     companion object {

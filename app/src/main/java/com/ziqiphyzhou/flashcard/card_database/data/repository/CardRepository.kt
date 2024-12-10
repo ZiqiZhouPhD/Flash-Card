@@ -28,7 +28,9 @@ interface CardRepository {
     suspend fun editCard(id: String, coll: String, title: String, body: String): Boolean
     suspend fun getLastIdWithLevelNoMoreThan(level: Int, coll: String): String
     suspend fun setVoiceToZeroCard(voice: String, titleOrBody: String, coll: String): Boolean
-
     suspend fun getAllCollectionNames(): List<String>
+    suspend fun getVoices(coll: String?): Pair<String,String>
+    suspend fun getDailyCount(coll: String?): Pair<String,Int>
+    suspend fun setDailyCount(coll: String, date: String, count: Int): Boolean
 
 }
