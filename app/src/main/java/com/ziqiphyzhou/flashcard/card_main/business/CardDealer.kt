@@ -9,6 +9,8 @@ interface CardDealer {
     suspend fun buryCard(isRemembered: Boolean)
     suspend fun setupDealer()
     suspend fun getCollName(): String?
+    suspend fun isCollBijective(): Boolean
+    suspend fun getFontSizes(): Pair<Int,Int>
 
     companion object {
         class CollectionMissingException: Exception()

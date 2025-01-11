@@ -271,14 +271,22 @@ class CardRepositoryDatabase @Inject constructor(private val cardDao: CardDao) :
         return withContext(Dispatchers.IO) {
             val zeroCard = cardDao.getById("@$coll")
             val collInfo = zeroCard.body.split(",").toMutableList()
-            if (collInfo.size == 4) {
+            if (collInfo.size >= 4) {
                 when (titleOrBody) {
                     "title" -> collInfo[2] = voice
                     "body" -> collInfo[3] = voice
                 }
                 zeroCard.body = collInfo.joinToString(",")
+            } else if (collInfo.size >= 2) {
+                when (titleOrBody) {
+                    "title" -> zeroCard.body = "${collInfo[0]},${collInfo[1]},$voice,"
+                    "body" -> zeroCard.body = "${collInfo[0]},${collInfo[1]},,$voice"
+                }
             } else {
-                zeroCard.body = ",,,"
+                when (titleOrBody) {
+                    "title" -> zeroCard.body = ",,$voice,"
+                    "body" -> zeroCard.body = ",,,$voice"
+                }
             }
             cardDao.updateCard(zeroCard)
             return@withContext true
@@ -353,6 +361,32 @@ class CardRepositoryDatabase @Inject constructor(private val cardDao: CardDao) :
         return Pair("","")
     }
 
+    // the sixth and seventh element of zero card's body text
+    // sets title and body font size
+    // default is (0,0), in which case the main program should use the actual default
+    override suspend fun getCardFontSizes(coll: String?): Pair<Int,Int> {
+        try {
+            getCurCollInfoOnZeroCard(coll)?.let {
+                if (it.size >= 7) return Pair(it[5].toInt(), it[6].toInt()) }
+        } catch (e: NumberFormatException) {
+            // return empty pair, handled below
+        }
+        return Pair(0,0)
+    }
+
+    // from here on, arguments are optional
+    // the fifth element of zeroCard's body
+    override suspend fun isCollBijective(coll: String?): Boolean {
+        try {
+            getCurCollInfoOnZeroCard(coll)?.let {
+                if (it.size >= 5) return it[4] == "bijective"
+            }
+        } catch (e: NumberFormatException) {
+            // return empty pair, handled below
+        }
+        return false
+    }
+
     // the first and second element of zero card's body text
     // returns date and count
     override suspend fun getDailyCount(coll: String?): Pair<String,Int> {
@@ -369,12 +403,12 @@ class CardRepositoryDatabase @Inject constructor(private val cardDao: CardDao) :
         return withContext(Dispatchers.IO) {
             val zeroCard = cardDao.getById("@$coll")
             val collInfo = zeroCard.body.split(",").toMutableList()
-            if (collInfo.size == 4) {
+            if (collInfo.size >= 2) {
                 collInfo[0] = date
                 collInfo[1] = count.toString()
                 zeroCard.body = collInfo.joinToString(",")
             } else {
-                zeroCard.body = ",,,"
+                zeroCard.body = "$date,${count}"
             }
             cardDao.updateCard(zeroCard)
             return@withContext true

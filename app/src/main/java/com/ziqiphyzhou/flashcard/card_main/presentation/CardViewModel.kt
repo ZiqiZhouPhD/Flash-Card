@@ -49,13 +49,21 @@ class CardViewModel @Inject constructor(
                 val topCard = cardDealer.getTop()
                 var displayedTitle = topCard.title
                 var displayedBody = topCard.body
+                val fontSizes = cardDealer.getFontSizes()
+                var titleSize = fontSizes.first
+                var bodySize = fontSizes.second
                 // Swap body and title if the card is remembered well enough
-                if ((topCard.state && topCard.level >= SHOW_BODY_AFTER_LEVEL)
-                    || (!topCard.state && topCard.level >= SHOW_BODY_AFTER_LEVEL - 1)) {
-                    displayedTitle = topCard.body
-                    displayedBody = topCard.title
+                if (cardDealer.isCollBijective()) {
+                    if ((topCard.state && topCard.level >= SHOW_BODY_AFTER_LEVEL)
+                        || (!topCard.state && topCard.level >= SHOW_BODY_AFTER_LEVEL - 1)
+                    ) {
+                        displayedTitle = topCard.body
+                        displayedBody = topCard.title
+                        titleSize = fontSizes.second
+                        bodySize = fontSizes.first
+                    }
                 }
-                _viewState.postValue(CardViewState.ShowTitleOnly(displayedTitle, displayedBody))
+                _viewState.postValue(CardViewState.ShowTitleOnly(displayedTitle, displayedBody, titleSize, bodySize))
             } catch (e: CardDealer.Companion.CollectionEmptyException) {
                 _viewState.postValue(CardViewState.CollectionEmpty)
             }

@@ -5,3 +5,5 @@ const val BOOKMARKS_SHAREDPREF_KEY = "bookmarks"
 const val LEVEL_CAP = 10 // should be at least the bookmark length; LEVEL_MIN = 0
 const val ADD_NEW_CARD_AFTER_LEVEL = 2
 const val SHOW_BODY_AFTER_LEVEL = 2
+const val DEFAULT_TITLE_SIZE = 26
+const val DEFAULT_BODY_SIZE = 18

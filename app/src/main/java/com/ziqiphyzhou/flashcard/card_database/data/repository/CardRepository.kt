@@ -32,5 +32,7 @@ interface CardRepository {
     suspend fun getVoices(coll: String?): Pair<String,String>
     suspend fun getDailyCount(coll: String?): Pair<String,Int>
     suspend fun setDailyCount(coll: String, date: String, count: Int): Boolean
+    suspend fun getCardFontSizes(coll: String?): Pair<Int,Int>
+    suspend fun isCollBijective(coll: String?): Boolean
 
 }

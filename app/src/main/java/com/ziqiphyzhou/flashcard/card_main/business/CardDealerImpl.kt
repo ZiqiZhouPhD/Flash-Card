@@ -7,6 +7,8 @@ import com.ziqiphyzhou.flashcard.AppApplication
 import com.ziqiphyzhou.flashcard.card_database.data.repository.CardRepository
 import com.ziqiphyzhou.flashcard.shared.BOOKMARKS_JSON_DEFAULT
 import com.ziqiphyzhou.flashcard.shared.BOOKMARKS_SHAREDPREF_KEY
+import com.ziqiphyzhou.flashcard.shared.DEFAULT_BODY_SIZE
+import com.ziqiphyzhou.flashcard.shared.DEFAULT_TITLE_SIZE
 import com.ziqiphyzhou.flashcard.shared.LEVEL_CAP
 import com.ziqiphyzhou.flashcard.shared.SHOW_BODY_AFTER_LEVEL
 import com.ziqiphyzhou.flashcard.shared.business.Card
@@ -133,6 +135,23 @@ class CardDealerImpl @Inject constructor(
 
     override suspend fun getCollName(): String? {
         return curColl.get()
+    }
+
+    override suspend fun isCollBijective(): Boolean {
+        return withContext(Dispatchers.IO) {
+            repository.isCollBijective(curColl.get())
+        }
+    }
+
+    override suspend fun getFontSizes(): Pair<Int, Int> {
+        return withContext(Dispatchers.IO) {
+            val fontSizes = repository.getCardFontSizes(curColl.get())
+            if (fontSizes.first == 0 || fontSizes.second == 0) {
+                return@withContext Pair(DEFAULT_TITLE_SIZE, DEFAULT_BODY_SIZE)
+            } else {
+                return@withContext fontSizes
+            }
+        }
     }
 
 }

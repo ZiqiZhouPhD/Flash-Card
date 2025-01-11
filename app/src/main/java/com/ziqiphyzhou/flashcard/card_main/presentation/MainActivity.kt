@@ -11,6 +11,7 @@ import android.opengl.Visibility
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
 import android.util.Log
+import android.util.TypedValue
 import android.view.KeyEvent
 import android.view.MenuItem
 import android.view.View
@@ -36,6 +37,8 @@ import com.ziqiphyzhou.flashcard.databinding.ActivityMainBinding
 import com.ziqiphyzhou.flashcard.settings_manage.presentation.SettingsActivity
 import com.ziqiphyzhou.flashcard.shared.BOOKMARKS_JSON_DEFAULT
 import com.ziqiphyzhou.flashcard.shared.BOOKMARKS_SHAREDPREF_KEY
+import com.ziqiphyzhou.flashcard.shared.DEFAULT_BODY_SIZE
+import com.ziqiphyzhou.flashcard.shared.DEFAULT_TITLE_SIZE
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -187,11 +190,20 @@ class MainActivity : AppCompatActivity()
             setButtonEnabled(false)
         }
 
+        fun setToDisplayOnlyWithDefaultFontSizes(displayText: String){
+            binding.tvTitle.setTextSize(TypedValue.COMPLEX_UNIT_SP, DEFAULT_TITLE_SIZE.toFloat())
+            binding.tvBody.setTextSize(TypedValue.COMPLEX_UNIT_SP, DEFAULT_BODY_SIZE.toFloat())
+            setToDisplayOnly(displayText)
+        }
+
         CoroutineScope(Dispatchers.Main).launch {
             when (viewState) {
                 is CardViewState.ShowTitleOnly -> {
+                    binding.tvTitle.setTextSize(TypedValue.COMPLEX_UNIT_SP, viewState.titleSize.toFloat())
+                    binding.tvBody.setTextSize(TypedValue.COMPLEX_UNIT_SP, viewState.bodySize.toFloat())
                     setToDisplayOnly(viewState.title)
                     cardBodyText = viewState.body
+
                     binding.btnForgot.text = resources.getString(R.string.btn_hesitate)
                     if (!voiceMode) setButtonEnabled(true)
                     else {
@@ -211,9 +223,15 @@ class MainActivity : AppCompatActivity()
                     setButtonEnabled(false)
                 }
 
-                CardViewState.Init -> setToDisplayOnly("'${viewModel.getCollName()}'")
-                CardViewState.CollectionEmpty -> setToDisplayOnly("'${viewModel.getCollName()}' is empty")
-                CardViewState.CollectionMissing -> setToDisplayOnly("No set selected")
+                CardViewState.Init -> {
+                    setToDisplayOnlyWithDefaultFontSizes("'${viewModel.getCollName()}'")
+                }
+                CardViewState.CollectionEmpty -> {
+                    setToDisplayOnlyWithDefaultFontSizes("'${viewModel.getCollName()}' is empty")
+                }
+                CardViewState.CollectionMissing -> {
+                    setToDisplayOnlyWithDefaultFontSizes("No set selected")
+                }
             }
         }
     }
