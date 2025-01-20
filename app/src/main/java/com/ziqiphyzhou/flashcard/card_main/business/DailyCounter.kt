@@ -30,8 +30,9 @@ class DailyCounter @Inject constructor(
             val (date, count) = curColl.getDailyCount()
             if (newDate != date) {
                 curColl.setDailyCount(newDate, 0)
+                return@withContext 0
             }
-            return@withContext count
+            else { return@withContext count }
         }
     }
 
