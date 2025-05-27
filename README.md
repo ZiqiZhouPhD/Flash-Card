@@ -5,7 +5,6 @@
 ### Immediate
 * check card add and processing behavior when deck size is larger than insertion index
 * new feature to distinguish between bijective set and one-way set, add setting option to change this setting (stored in the zero-card)
-* add python code to convert external vocab list to importable format
 
 ### Planned
 * save and exit for edit activity and show snackbar afterwards
