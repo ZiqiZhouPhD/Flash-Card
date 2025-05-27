@@ -20,4 +20,8 @@
 * debug database behaviors
 * include a behavior description page in settings
 * new feature to hear tts on tap
-* write better descriptions in this README file 
+* write better descriptions in this README file
+
+## Creating New Vocab Lists
+
+Other than creating new vocab lists in the app, one may also create them from raw vocab-meaning lists using [the supplied python tool](raw-vocab-to-meta-tool.py).
