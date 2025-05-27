@@ -17,30 +17,65 @@ class ImportExportViewModel @Inject constructor(
     private var curColl: CurrentCollectionManager
 ) : ViewModel() {
 
-    private val deliminator = ":"
-    private val gson = Gson()
-
     suspend fun getDatabaseJson(): String? {
         return withContext(Dispatchers.IO) {
             curColl.get()?.let {
-                "$it$deliminator${gson.toJson(repository.exportCollection(it))}"
+                Gson().toJson(listOf(it, repository.exportCollection(it)))
             }
         }
     }
 
     suspend fun saveJsonToDatabase(stringJson: String): Boolean {
-        if (!stringJson.contains(deliminator)) return false
-        val coll = stringJson.substringBefore(deliminator)
-        val cardsStringJson = stringJson.substringAfter(deliminator)
-        return withContext(Dispatchers.IO) {
-            try {
+        try {
+            val (coll, cardsStringJson) = unpackJsonList(stringJson)
+            return withContext(Dispatchers.IO) {
                 val typeToken = object : TypeToken<List<Card>>() {}.type
                 val cardList = Gson().fromJson<List<Card>>(cardsStringJson, typeToken)
                 return@withContext repository.importCollection(cardList, coll).also {
                     if (it) curColl.set(coll)
                 }
-            } catch (e: Exception) { return@withContext false }
+            }
+        } catch (e: Exception) { return false }
+    }
+
+    /**
+     * Unpacks a JSON string in the format `["string1", {...}]` into:
+     * - First element: String (parsed)
+     * - Second element: Raw JSON string (unparsed)
+     */
+    private fun unpackJsonList(rawJson: String): Pair<String, String> {
+        // Strip outer [] and trim whitespace
+        val stripped = rawJson
+            .trim()
+            .removePrefix("[")
+            .removeSuffix("]")
+            .trim()
+
+        // Find first comma that's outside quotes
+        val firstCommaIndex = findUnquotedCommaIndex(stripped)
+            ?: throw IllegalArgumentException("Invalid JSON list - no comma separator found")
+
+        // Split into first element and remaining content
+        val firstElement = stripped.substring(0, firstCommaIndex).trim()
+        val remainingContent = stripped.substring(firstCommaIndex + 1).trim()
+
+        // Remove quotes from first element if present
+        val unquotedFirst = firstElement
+            .removeSurrounding("\"")
+            .removeSurrounding("'")
+
+        return unquotedFirst to remainingContent
+    }
+
+    private fun findUnquotedCommaIndex(str: String): Int? {
+        var inQuotes = false
+        for ((index, char) in str.withIndex()) {
+            when (char) {
+                '"' -> inQuotes = !inQuotes
+                ',' -> if (!inQuotes) return index
+            }
         }
+        return null
     }
 
 }
