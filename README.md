@@ -3,6 +3,9 @@
 ## To-dos
 
 ### Immediate
+* make sure the python code to generate vocab list works
+   * move list name info into zero card metadata
+* remake export and import features to use SAF framework
 * check card add and processing behavior when deck size is larger than insertion index
 * new feature to distinguish between bijective set and one-way set, add setting option to change this setting (stored in the zero-card)
 
