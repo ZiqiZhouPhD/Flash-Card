@@ -1,10 +1,21 @@
 # Flash Card App
 
+<p align="center">
+  <img src="app/src/main/ic_launcher-playstore.png" width="150"/>
+</p>
+
 This is an Android Flashcard App ideal for personal learning and memorization purpose, with built-in algorithm to help you create and memorize your own flashcards efficiently.
 
 The project explores practical aspects of vocabulary management and lightweight data modeling, with an emphasis on clarity and maintainability rather than feature completeness.
 
 *This project is separate from my quantitative finance work and represents a continuously evolving hobby project driven by personal use cases.*
+
+### Demo Screenshots
+
+<p align="center">
+  <img src="screenshots/main_activity.jpg" width="45%" style="margin-right:5%;" />
+  <img src="screenshots/settings.jpg" width="45%" />
+</p>
 
 ---
 
