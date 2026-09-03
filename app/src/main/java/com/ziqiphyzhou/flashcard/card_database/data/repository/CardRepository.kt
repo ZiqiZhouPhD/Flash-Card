@@ -17,8 +17,12 @@ interface CardRepository {
     suspend fun getAllBeginWith(substring: String, coll: String, exact: Boolean = false): List<Card>
     suspend fun deleteCard(id: String, coll: String): Boolean
     suspend fun findInsertionPosIds(posList: List<Int>, coll: String): List<String>
-    suspend fun buryTopAfterId(buryAfterThisId: String, coll: String)
-    suspend fun setTopCardLevelAndState(level: Int, state: Boolean, coll: String)
+    suspend fun updateTopCardAndBuryAfter(
+        level: Int,
+        state: Boolean,
+        buryAfterThisId: String,
+        coll: String
+    )
     suspend fun getNextIdById(id: String, coll: String): String
     suspend fun importCollection(importList: List<Card>, coll: String): Boolean
     suspend fun emptyCollection(coll: String): Boolean

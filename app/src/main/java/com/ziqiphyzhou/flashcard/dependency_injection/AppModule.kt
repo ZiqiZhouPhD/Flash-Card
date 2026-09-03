@@ -29,6 +29,7 @@ import javax.inject.Singleton
 class AppModule {
 
     @Provides
+    @Singleton
     fun provideCardDataBase(
         @ApplicationContext context: Context
     ): CardDatabase = Room.databaseBuilder(
@@ -46,8 +47,8 @@ class AppModule {
 
     @Provides
     fun provideCardRepositoryDatabase(
-        cardDao: CardDao
-    ): CardRepositoryDatabase = CardRepositoryDatabase(cardDao)
+        cardDatabase: CardDatabase
+    ): CardRepositoryDatabase = CardRepositoryDatabase(cardDatabase)
 
     @Provides
     fun provideCardRepository(

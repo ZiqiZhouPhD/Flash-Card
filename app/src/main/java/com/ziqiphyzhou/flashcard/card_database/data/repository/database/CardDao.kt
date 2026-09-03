@@ -38,9 +38,6 @@ interface CardDao {
     @Delete
     fun deleteCard(cardEntity: CardEntity)
 
-    @Query("DELETE FROM card WHERE id NOT LIKE '@%' AND coll = :coll")
-    fun deleteAllExceptZero(coll: String)
-
     @Query("DELETE FROM card WHERE coll = :coll")
     fun deleteAll(coll: String)
 

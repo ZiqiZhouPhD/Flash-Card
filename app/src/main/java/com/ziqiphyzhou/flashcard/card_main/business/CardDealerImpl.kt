@@ -68,23 +68,33 @@ class CardDealerImpl @Inject constructor(
                     isRemembered = isRemembered,
                     bookmarkCount = bookmarkList.size
                 )
-                repository.setTopCardLevelAndState(review.level, review.state, coll)
-
                 val insertAfterThisId = bookmarkList[review.buryLevel]
+                val updatedBookmarks = bookmarksAfterBury(topCard.id, review.buryLevel, coll)
 
-                updateBookmarksBeforeBury(topCard.id, review.buryLevel, coll)
-
-                repository.buryTopAfterId(insertAfterThisId, coll)
+                repository.updateTopCardAndBuryAfter(
+                    level = review.level,
+                    state = review.state,
+                    buryAfterThisId = insertAfterThisId,
+                    coll = coll
+                )
+                bookmarkList.clear()
+                bookmarkList.addAll(updatedBookmarks)
             } ?: throw CardDealer.Companion.CollectionMissingException()
 
         }
     }
 
-    private suspend fun updateBookmarksBeforeBury(topCardId: String, buryLevel: Int, coll: String) {
+    private suspend fun bookmarksAfterBury(
+        topCardId: String,
+        buryLevel: Int,
+        coll: String
+    ): List<String> {
+        val updatedBookmarks = bookmarkList.toMutableList()
         for (level in 0..<buryLevel) {
-            bookmarkList[level] = repository.getNextIdById(bookmarkList[level], coll)
+            updatedBookmarks[level] = repository.getNextIdById(updatedBookmarks[level], coll)
         }
-        bookmarkList[buryLevel] = topCardId
+        updatedBookmarks[buryLevel] = topCardId
+        return updatedBookmarks
     }
 
     override suspend fun setupDealer() {
