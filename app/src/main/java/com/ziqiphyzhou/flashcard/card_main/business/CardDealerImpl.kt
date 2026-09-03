@@ -9,13 +9,9 @@ import com.ziqiphyzhou.flashcard.shared.BOOKMARKS_JSON_DEFAULT
 import com.ziqiphyzhou.flashcard.shared.BOOKMARKS_SHAREDPREF_KEY
 import com.ziqiphyzhou.flashcard.shared.DEFAULT_BODY_SIZE
 import com.ziqiphyzhou.flashcard.shared.DEFAULT_TITLE_SIZE
-import com.ziqiphyzhou.flashcard.shared.LEVEL_CAP
-import com.ziqiphyzhou.flashcard.shared.SHOW_BODY_AFTER_LEVEL
 import com.ziqiphyzhou.flashcard.shared.business.Card
 import com.ziqiphyzhou.flashcard.shared.business.CurrentCollectionManager
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
@@ -60,53 +56,23 @@ class CardDealerImpl @Inject constructor(
         }
     }
 
-    private fun getTrimLevelByBookmarkListSize(card: Card): Int {
-        return card.level.takeIf { it < bookmarkList.size } ?: (bookmarkList.size - 1)
-    }
-
     override suspend fun buryCard(isRemembered: Boolean) {
         return withContext(Dispatchers.IO) {
             curColl.get()?.let { coll ->
-
-                var stateIsFalseAndLevelIsShowBodyAfterLevelAndRemembered = false
-                // if true, move level up 1 to SHOW_BODY_AFTER_LEVEL, set state to false, and bury with SHOW_BODY_AFTER_LEVEL - 1
-
                 val topCard = repository.getTop(coll)
                 if (topCard.id == "") return@withContext
 
-                when (isRemembered) {
-                    true -> {
-                        when (topCard.state) {
-                            true -> topCard.level += 1
-                            false -> {
-                                if (topCard.level == SHOW_BODY_AFTER_LEVEL - 1) {
-                                    stateIsFalseAndLevelIsShowBodyAfterLevelAndRemembered = true
-                                    topCard.level += 1
-                                }
-                                else topCard.state = true
-                            }
-                        }
-                    }
+                val review = CardReviewPolicy.review(
+                    level = topCard.level,
+                    state = topCard.state,
+                    isRemembered = isRemembered,
+                    bookmarkCount = bookmarkList.size
+                )
+                repository.setTopCardLevelAndState(review.level, review.state, coll)
 
-                    false -> {
-                        topCard.level -= 1
-                        topCard.state = false
-                    }
-                }
+                val insertAfterThisId = bookmarkList[review.buryLevel]
 
-                if (topCard.level < 0) topCard.level = 0
-                else if (topCard.level > LEVEL_CAP) topCard.level = LEVEL_CAP
-
-                repository.setTopCardLevelAndState(topCard.level, topCard.state, coll)
-
-                var buryLevel = 0 // if forgot
-                if (isRemembered) {
-                    buryLevel = getTrimLevelByBookmarkListSize(topCard)
-                    if (stateIsFalseAndLevelIsShowBodyAfterLevelAndRemembered) buryLevel -= 1
-                }
-                val insertAfterThisId = bookmarkList[buryLevel]
-
-                updateBookmarksBeforeBury(topCard.id, buryLevel, coll)
+                updateBookmarksBeforeBury(topCard.id, review.buryLevel, coll)
 
                 repository.buryTopAfterId(insertAfterThisId, coll)
             } ?: throw CardDealer.Companion.CollectionMissingException()
@@ -126,9 +92,7 @@ class CardDealerImpl @Inject constructor(
             // get bookmarks from shared preferences, initialize shared preferences if does not exist
             val bookmarksJson =
                 sharedPref.getString(BOOKMARKS_SHAREDPREF_KEY, null) ?: BOOKMARKS_JSON_DEFAULT
-            CoroutineScope(Dispatchers.Main).launch {
-                initBookmarkIdList(gson.fromJson(bookmarksJson, Array<Int>::class.java).toList())
-            }
+            initBookmarkIdList(gson.fromJson(bookmarksJson, Array<Int>::class.java).toList())
             sharedPref.edit { putString(BOOKMARKS_SHAREDPREF_KEY, bookmarksJson) }
         } ?: throw CardDealer.Companion.CollectionMissingException()
     }
