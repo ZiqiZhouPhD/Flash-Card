@@ -1,15 +1,71 @@
-*.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
+# Gradle and Kotlin build state
+.gradle/
+.kotlin/
+/build/
+**/build/
+
+# Local Android SDK and native-build state
 local.properties
+captures/
+.externalNativeBuild/
+.cxx/
+
+# IDE and editor state
+.idea/
+.vscode/
+.fleet/
+.navigation/
+.settings/
+.classpath
+.project
+*.iml
+*.swp
+*.swo
+*~
+
+# Generated application artifacts
+*.apk
+*.aab
+*.apks
+*.aar
+*.ap_
+*.dex
+*.class
+*.hprof
+/bin/
+/gen/
+/out/
+
+# Signing credentials and local secrets
+*.jks
+*.keystore
+keystore.properties
+secrets.properties
+.env
+.env.*
+!.env.example
+
+# Python tool state
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+.tox/
+.coverage
+htmlcov/
+dist/
+*.egg-info/
+
+# Operating-system metadata
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Local logs
+*.log
