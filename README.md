@@ -1,29 +1,73 @@
-# Flash Card App
+# Flash Card
 
-## To-dos
+Flash Card is an offline Android study app with multiple named card sets, level-based queue scheduling, optional two-way prompts, text-to-speech study, a daily counter, and clipboard JSON backup/restore.
 
-### Immediate
-* make sure the python code to generate vocab list works
-   * move list name info into zero card metadata
-* remake export and import features to use SAF framework
-* check card add and processing behavior when deck size is larger than insertion index
-* new feature to distinguish between bijective set and one-way set, add setting option to change this setting (stored in the zero-card)
+## Current features
 
-### Planned
-* save and exit for edit activity and show snackbar afterwards
-* reorganize settings into activities
-    * implement edit collection activity
-    * implement edit tts activity
-* Python program to reset a card set
+- Study a selected set one card at a time.
+- Reveal an answer, then rate the card remembered or forgotten.
+- Reinsert cards at increasing queue depths as their learning level changes.
+- Create, select, revisit, and delete named sets.
+- Add cards and search by title prefix to edit or delete them.
+- Use separate Android TTS voices for the two card sides.
+- Study with hardware media controls in audio mode.
+- Import and export a complete set as clipboard JSON.
 
-### Non-Essential
-* setup themes
-* implement edit bookmark behaviors
-* debug database behaviors
-* include a behavior description page in settings
-* new feature to hear tts on tap
-* write better descriptions in this README file
+## Project documentation
 
-## Creating New Vocab Lists
+- [App design](docs/APP_DESIGN.md) — product behavior, screens, architecture, scheduling, and known constraints
+- [Data format](docs/DATA_FORMAT.md) — circular-list invariants, zero-card metadata, Room representation, and JSON interchange
+- [Testing guide](docs/TESTING.md) — test layers, package layout, commands, and safe device checks
+- [Agent and contributor guide](AGENTS.md) — repository map, build checks, architectural rules, and change discipline
+- [Changelog](CHANGELOG.md) — notable unreleased changes and verification status
 
-Other than creating new vocab lists in the app, one may also create them from raw vocab-meaning lists using [the supplied python tool](raw-vocab-to-meta-tool.py).
+## Development setup
+
+The project is a single Kotlin/Android module using XML layouts, View Binding, AGP's built-in Kotlin support, KSP, Hilt, Room, LiveData/ViewModel, coroutines, Material Components, and Gson.
+
+Requirements:
+
+- Android Studio with Android SDK 36 and Build Tools 36.0.0 installed
+- JetBrains JDK 21 (the current Gradle JVM criteria use it)
+- An API 34+ emulator/device for instrumented tests
+
+From Windows PowerShell:
+
+```powershell
+.\gradlew.bat test
+.\gradlew.bat assembleDebug
+.\gradlew.bat lint
+```
+
+Use `./gradlew` instead of `.\gradlew.bat` on macOS or Linux. The test suite includes focused scheduling tests plus isolated Room and launch checks. With one authorized Android device connected, run the non-destructive in-place device check:
+
+```powershell
+.\scripts\device-smoke-test.ps1
+```
+
+The script never uninstalls or clears the application package. It updates with `adb install -r`, verifies that the original install timestamp is unchanged, runs instrumented tests, relaunches the app, checks Android's crash buffer, and removes only its temporary test package.
+
+## Creating an importable set
+
+Sets can be created in the app, or generated from a UTF-8 text file containing one `word<TAB>definition` pair per line:
+
+```powershell
+python .\raw-vocab-to-meta-tool.py .\vocab.txt --output .\vocab.json
+```
+
+The generated JSON follows the app's clipboard import format. Copy the JSON text, then open **Settings → Import / Export → Import**. See [the data-format reference](docs/DATA_FORMAT.md) before generating or editing payloads outside the app.
+
+## Roadmap and known debt
+
+High-priority work visible in the current implementation includes:
+
+- Move import/export from clipboard text to Android's Storage Access Framework.
+- Add real tests for scheduling and repository link integrity.
+- Make multi-row database mutations transactional.
+- Await dealer bookmark initialization before accepting ratings.
+- Version and structure the zero-card metadata format.
+- Add Settings controls for bijective/one-way behavior and per-side font sizes.
+- Validate collection names and improve malformed-data handling.
+- Split the Settings hub into more focused screens.
+
+Lower-priority ideas include theme refinement, bookmark editing, behavior help, TTS-on-tap, and a utility to reset a set's scheduling state.
