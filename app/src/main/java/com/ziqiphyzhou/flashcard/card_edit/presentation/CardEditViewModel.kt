@@ -4,14 +4,17 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ziqiphyzhou.flashcard.card_edit.business.CardEditor
+import com.ziqiphyzhou.flashcard.card_edit.business.CardEditorActions
 import com.ziqiphyzhou.flashcard.shared.presentation.view_model.Event
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class CardEditViewModel @Inject constructor(private val cardEditor: CardEditor) : ViewModel() {
+class CardEditViewModel @Inject constructor(private val cardEditor: CardEditorActions) : ViewModel() {
+
+    private var editJob: Job? = null
 
     private val _message = MutableLiveData<Event<String>>()
     val message: LiveData<Event<String>>
@@ -22,7 +25,8 @@ class CardEditViewModel @Inject constructor(private val cardEditor: CardEditor) 
         get() = _saved
 
     fun edit(id: String, title: String, body: String) {
-        viewModelScope.launch {
+        if (editJob?.isActive == true) return
+        editJob = viewModelScope.launch {
             val saveTitle = title.takeIf { it != "" } ?: "null"
             if (cardEditor.editCard(id, saveTitle, body)) {
                 _message.value = Event("Changes in \"${saveTitle}\" saved. ")

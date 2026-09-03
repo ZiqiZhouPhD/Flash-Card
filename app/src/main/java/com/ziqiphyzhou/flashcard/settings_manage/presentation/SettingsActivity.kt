@@ -4,7 +4,6 @@ import android.content.Intent
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
 import android.view.WindowManager
-import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
@@ -12,6 +11,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.snackbar.Snackbar
 import com.ziqiphyzhou.flashcard.card_add.presentation.AddActivity
 import com.ziqiphyzhou.flashcard.card_delete.presentation.DeleteActivity
@@ -19,8 +19,6 @@ import com.ziqiphyzhou.flashcard.databinding.ActivitySettingsBinding
 import com.ziqiphyzhou.flashcard.databinding.DialogTextEditBinding
 import com.ziqiphyzhou.flashcard.import_export.presentation.ImportExportActivity
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 
@@ -66,15 +64,16 @@ class SettingsActivity : AppCompatActivity() {
                 .setTitle("Enter new card set name")
                 .setView(dialogBinding.root)
                 .setPositiveButton("Create") { dialog, _ ->
-                    CoroutineScope(Dispatchers.IO).launch {
-                        if (dialogBinding.editTextDialog.text.toString() !in getAllSetName()
-                            && viewModel.addCollection(dialogBinding.editTextDialog.text.toString())) {
+                    val collectionName = dialogBinding.editTextDialog.text.toString()
+                    lifecycleScope.launch {
+                        if (collectionName !in getAllSetNames()
+                            && viewModel.addCollection(collectionName)) {
                             Snackbar.make(
                                 binding.root,
-                                "Card set '${dialogBinding.editTextDialog.text}' created",
+                                "Card set '$collectionName' created",
                                 Snackbar.LENGTH_LONG
                             ).show()
-                            setSetSelectionUi()
+                            updateSetSelectionUi()
                         } else Snackbar.make(binding.root, "Creation failed", Snackbar.LENGTH_LONG).show()
                     }
                     dialog.dismiss()
@@ -94,14 +93,14 @@ class SettingsActivity : AppCompatActivity() {
                 .setTitle("Warning!")
                 .setMessage("You are about to permanently delete set '$currentCollectionName'. You will not be able to retrieve the data!")
                 .setPositiveButton("Delete") { dialog, _ ->
-                    CoroutineScope(Dispatchers.IO).launch {
+                    lifecycleScope.launch {
                         if (viewModel.deleteCurrentCollection()) {
                             Snackbar.make(
                                 binding.root,
                                 "Card set '$currentCollectionName' deleted",
                                 Snackbar.LENGTH_LONG
                             ).show()
-                            setSetSelectionUi()
+                            updateSetSelectionUi()
                         } else {
                             Snackbar.make(binding.root, "Deletion failed", Snackbar.LENGTH_LONG)
                                 .show()
@@ -120,43 +119,45 @@ class SettingsActivity : AppCompatActivity() {
         )
         binding.spinnerSet.setAdapter(setSpinnerArrayAdapter)
 
-        setSetSelectionUi()
+        lifecycleScope.launch { updateSetSelectionUi() }
 
         binding.buttonSetSwitch.setOnClickListener {
-            CoroutineScope(Dispatchers.IO).launch {
+            lifecycleScope.launch {
                 if (viewModel.switchCollection(
-                    binding.spinnerSet.selectedItem.toString().takeUnless { it == noSetSelected }
+                    binding.spinnerSet.selectedItem?.toString()?.takeUnless { it == noSetSelected }
                 )) Snackbar.make(binding.root, "Switch succeeded", Snackbar.LENGTH_LONG).show()
                 else Snackbar.make(binding.root, "Switch failed", Snackbar.LENGTH_LONG).show()
-                setSetSelectionUi()
+                updateSetSelectionUi()
             }
         }
 
         binding.buttonSetPrevious.setOnClickListener {
-            CoroutineScope(Dispatchers.IO).launch {
+            lifecycleScope.launch {
                 if (viewModel.switchCollection(
                     getPreviousSetName().takeUnless { it == noSetSelected }
                 )) Snackbar.make(binding.root, "Switch succeeded", Snackbar.LENGTH_LONG).show()
                 else Snackbar.make(binding.root, "Switch failed", Snackbar.LENGTH_LONG).show()
-                setSetSelectionUi()
+                updateSetSelectionUi()
             }
         }
 
-        CoroutineScope(Dispatchers.IO).launch {
+        lifecycleScope.launch {
             val voices = viewModel.getVoices()
             binding.tvTitleVoice.text = "Current Title Voice: ${voices.first}"
             binding.tvBodyVoice.text = "Current Body Voice: ${voices.second}"
         }
 
-        textToSpeech = TextToSpeech(this) {
-            val spinnerArrayAdapter: ArrayAdapter<*> = ArrayAdapter<String>(
-                this,
-                android.R.layout.simple_spinner_dropdown_item,
-                listOf("") + textToSpeech.availableLanguages.toList()
-                    .map { "${it.language}-${it.country}-${it.variant}" }.sorted()
-            )
-            binding.spinnerTitleVoice.setAdapter(spinnerArrayAdapter)
-            binding.spinnerBodyVoice.setAdapter(spinnerArrayAdapter)
+        textToSpeech = TextToSpeech(this) { status ->
+            if (status == TextToSpeech.SUCCESS && !isDestroyed) {
+                val spinnerArrayAdapter: ArrayAdapter<*> = ArrayAdapter<String>(
+                    this,
+                    android.R.layout.simple_spinner_dropdown_item,
+                    listOf("") + textToSpeech.availableLanguages.toList()
+                        .map { "${it.language}-${it.country}-${it.variant}" }.sorted()
+                )
+                binding.spinnerTitleVoice.setAdapter(spinnerArrayAdapter)
+                binding.spinnerBodyVoice.setAdapter(spinnerArrayAdapter)
+            }
         }
 
         binding.buttonTitleVoiceSave.setOnClickListener {
@@ -173,21 +174,18 @@ class SettingsActivity : AppCompatActivity() {
 
     }
 
-    private fun setSetSelectionUi() {
+    private suspend fun updateSetSelectionUi() {
         binding.tvSetCurrent.text = "Current Set '${getCurrentSetName()}'"
         binding.tvSetPrevious.text = "previous '${getPreviousSetName()}'"
 
-        // using Dispatchers.Main solves a fatal coroutine error, which I don't understand
-        CoroutineScope(Dispatchers.Main).launch {
-            val allCollections = getAllSetName()
-            setSpinnerArrayAdapter.clear()
-            setSpinnerArrayAdapter.addAll(allCollections)
-            binding.spinnerSet.setSelection(allCollections.indexOf(getCurrentSetName())) // default to noSetSelected
-        }
+        val allCollections = getAllSetNames()
+        setSpinnerArrayAdapter.clear()
+        setSpinnerArrayAdapter.addAll(allCollections)
+        binding.spinnerSet.setSelection(allCollections.indexOf(getCurrentSetName()))
     }
 
     private fun saveItemSelectedVoiceSpinner(titleOrBody: String, voice: String) {
-        CoroutineScope(Dispatchers.IO).launch {
+        lifecycleScope.launch {
             if (viewModel.setVoice(voice, titleOrBody)) {
                 Snackbar.make(
                     binding.root,
@@ -206,6 +204,14 @@ class SettingsActivity : AppCompatActivity() {
 
     private fun getCurrentSetName() = viewModel.getCurrentCollectionName() ?: noSetSelected
     private fun getPreviousSetName() = viewModel.getPreviousCollectionName() ?: noSetSelected
-    private suspend fun getAllSetName() = listOf(noSetSelected) + viewModel.getAllCollectionNames()
+    private suspend fun getAllSetNames() = listOf(noSetSelected) + viewModel.getAllCollectionNames()
+
+    override fun onDestroy() {
+        if (::textToSpeech.isInitialized) {
+            textToSpeech.stop()
+            textToSpeech.shutdown()
+        }
+        super.onDestroy()
+    }
 
 }

@@ -7,6 +7,7 @@ import com.ziqiphyzhou.flashcard.card_database.data.repository.CardRepository
 import com.ziqiphyzhou.flashcard.shared.business.Card
 import com.ziqiphyzhou.flashcard.shared.business.CurrentCollectionManager
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -27,15 +28,19 @@ class ImportExportViewModel @Inject constructor(
 
     suspend fun saveJsonToDatabase(stringJson: String): Boolean {
         try {
-            val (coll, cardsStringJson) = unpackJsonList(stringJson)
-            return withContext(Dispatchers.IO) {
+            return withContext(Dispatchers.Default) {
+                val (coll, cardsStringJson) = unpackJsonList(stringJson)
                 val typeToken = object : TypeToken<List<Card>>() {}.type
                 val cardList = Gson().fromJson<List<Card>>(cardsStringJson, typeToken)
                 return@withContext repository.importCollection(cardList, coll).also {
                     if (it) curColl.set(coll)
                 }
             }
-        } catch (e: Exception) { return false }
+        } catch (exception: CancellationException) {
+            throw exception
+        } catch (exception: Exception) {
+            return false
+        }
     }
 
     /**

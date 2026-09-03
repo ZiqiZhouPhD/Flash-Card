@@ -16,6 +16,9 @@ import com.ziqiphyzhou.flashcard.card_database.data.repository.database.CardData
 import com.ziqiphyzhou.flashcard.card_main.business.CardDealer
 import com.ziqiphyzhou.flashcard.card_main.business.CardDealerImpl
 import com.ziqiphyzhou.flashcard.card_main.business.DailyCounter
+import com.ziqiphyzhou.flashcard.card_main.business.ReviewCounter
+import com.ziqiphyzhou.flashcard.card_edit.business.CardEditor
+import com.ziqiphyzhou.flashcard.card_edit.business.CardEditorActions
 import com.ziqiphyzhou.flashcard.shared.business.CurrentCollectionManager
 import dagger.Module
 import dagger.Provides
@@ -59,6 +62,16 @@ class AppModule {
     fun provideCardDealer(
         cardDealerImpl: CardDealerImpl
     ): CardDealer = cardDealerImpl
+
+    @Provides
+    fun provideReviewCounter(
+        dailyCounter: DailyCounter
+    ): ReviewCounter = dailyCounter
+
+    @Provides
+    fun provideCardEditorActions(
+        cardEditor: CardEditor
+    ): CardEditorActions = cardEditor
 
     @Singleton // included so that a singleton is used
     @Provides

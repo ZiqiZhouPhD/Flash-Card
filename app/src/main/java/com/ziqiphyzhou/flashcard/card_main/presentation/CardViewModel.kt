@@ -9,11 +9,13 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ziqiphyzhou.flashcard.card_main.business.CardDealer
-import com.ziqiphyzhou.flashcard.card_main.business.DailyCounter
+import com.ziqiphyzhou.flashcard.card_main.business.ReviewCounter
 import com.ziqiphyzhou.flashcard.shared.SHOW_BODY_AFTER_LEVEL
 import com.ziqiphyzhou.flashcard.shared.presentation.view_model.Event
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import javax.inject.Inject
 
 // the CardViewModel instance is created by the view model library (livecycle)
@@ -22,8 +24,10 @@ import javax.inject.Inject
 @HiltViewModel // needed before view models needing injection
 class CardViewModel @Inject constructor(
     private val cardDealer: CardDealer,
-    private val counter: DailyCounter
+    private val counter: ReviewCounter
 ) : ViewModel() {
+
+    private val operationMutex = Mutex()
 
     // the following trick of defining two variables allows us to mutate live data here in the view model
     // but not access the live data outside
@@ -42,56 +46,74 @@ class CardViewModel @Inject constructor(
         get() = _count
 
     fun loadCard() {
+        if (_viewState.value == CardViewState.Freeze) return
+        _viewState.value = CardViewState.Freeze
         viewModelScope.launch {
-            _viewState.postValue(CardViewState.Freeze)
-            try {
-                _voices.value = Event(cardDealer.getVoices())
-                val topCard = cardDealer.getTop()
-                var displayedTitle = topCard.title
-                var displayedBody = topCard.body
-                val fontSizes = cardDealer.getFontSizes()
-                var titleSize = fontSizes.first
-                var bodySize = fontSizes.second
-                // Swap body and title if the card is remembered well enough
-                if (cardDealer.isCollBijective()) {
-                    if ((topCard.state && topCard.level >= SHOW_BODY_AFTER_LEVEL)
-                        || (!topCard.state && topCard.level >= SHOW_BODY_AFTER_LEVEL - 1)
-                    ) {
-                        displayedTitle = topCard.body
-                        displayedBody = topCard.title
-                        titleSize = fontSizes.second
-                        bodySize = fontSizes.first
-                    }
-                }
-                _viewState.postValue(CardViewState.ShowTitleOnly(displayedTitle, displayedBody, titleSize, bodySize))
-            } catch (e: CardDealer.Companion.CollectionEmptyException) {
-                _viewState.postValue(CardViewState.CollectionEmpty)
+            operationMutex.withLock {
+                loadCardNow()
             }
         }
     }
 
     fun buryCard(isRemembered: Boolean) {
+        if (_viewState.value !is CardViewState.ShowTitleOnly) return
+        _viewState.value = CardViewState.Freeze
         viewModelScope.launch {
-            _viewState.postValue(CardViewState.Freeze)
-            cardDealer.buryCard(isRemembered)
-            if (isRemembered) _count.value = Event(counter.incrementCount())
-            loadCard()
+            operationMutex.withLock {
+                cardDealer.buryCard(isRemembered)
+                if (isRemembered) _count.value = Event(counter.incrementCount())
+                loadCardNow()
+            }
         }
     }
 
     fun initView() {
+        _viewState.value = CardViewState.Freeze
         viewModelScope.launch {
-            try {
-                cardDealer.setupDealer()
-            } catch (e: CardDealer.Companion.CollectionMissingException) {
-                _viewState.postValue(CardViewState.CollectionMissing)
-                return@launch
+            operationMutex.withLock {
+                try {
+                    cardDealer.setupDealer()
+                } catch (e: CardDealer.Companion.CollectionMissingException) {
+                    _viewState.value = CardViewState.CollectionMissing
+                    return@withLock
+                }
+                _viewState.value = CardViewState.Init
+                _count.value = Event(counter.update())
             }
-            _viewState.postValue(CardViewState.Init)
-            _count.value = Event(counter.update())
         }
     }
 
-    suspend fun getCollName() = cardDealer.getCollName()
+    fun getCollName() = cardDealer.getCollName()
+
+    private suspend fun loadCardNow() {
+        try {
+            _voices.value = Event(cardDealer.getVoices())
+            val topCard = cardDealer.getTop()
+            var displayedTitle = topCard.title
+            var displayedBody = topCard.body
+            val fontSizes = cardDealer.getFontSizes()
+            var titleSize = fontSizes.first
+            var bodySize = fontSizes.second
+            if (cardDealer.isCollBijective()
+                && ((topCard.state && topCard.level >= SHOW_BODY_AFTER_LEVEL)
+                    || (!topCard.state && topCard.level >= SHOW_BODY_AFTER_LEVEL - 1))
+            ) {
+                displayedTitle = topCard.body
+                displayedBody = topCard.title
+                titleSize = fontSizes.second
+                bodySize = fontSizes.first
+            }
+            _viewState.value = CardViewState.ShowTitleOnly(
+                displayedTitle,
+                displayedBody,
+                titleSize,
+                bodySize
+            )
+        } catch (exception: CardDealer.Companion.CollectionEmptyException) {
+            _viewState.value = CardViewState.CollectionEmpty
+        } catch (exception: CardDealer.Companion.CollectionMissingException) {
+            _viewState.value = CardViewState.CollectionMissing
+        }
+    }
 
 }

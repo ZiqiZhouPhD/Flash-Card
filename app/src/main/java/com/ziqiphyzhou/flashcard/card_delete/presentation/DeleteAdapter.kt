@@ -1,19 +1,11 @@
 package com.ziqiphyzhou.flashcard.card_delete.presentation
 
-import android.annotation.SuppressLint
-import android.content.Context
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.RecyclerView
 import com.ziqiphyzhou.flashcard.R
 import com.ziqiphyzhou.flashcard.databinding.ItemDeleteBinding
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlin.reflect.KFunction1
 
 class DeleteAdapter(
     val onDeleteClicked: (DeleteCardViewState) -> Unit,

@@ -7,41 +7,24 @@ package com.ziqiphyzhou.flashcard.card_main.presentation
 
 import android.content.Intent
 import android.graphics.BlurMaskFilter
-import android.opengl.Visibility
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
-import android.util.Log
 import android.util.TypedValue
 import android.view.KeyEvent
-import android.view.MenuItem
 import android.view.View
-import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.PopupMenu
-import androidx.core.content.edit
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import androidx.core.view.isVisible
-import androidx.preference.PreferenceManager
-import com.google.android.material.snackbar.Snackbar
-import com.google.gson.Gson
 import com.ziqiphyzhou.flashcard.R
-import com.ziqiphyzhou.flashcard.card_add.presentation.AddActivity
-import com.ziqiphyzhou.flashcard.card_delete.presentation.DeleteActivity
 import com.ziqiphyzhou.flashcard.databinding.ActivityMainBinding
 import com.ziqiphyzhou.flashcard.settings_manage.presentation.SettingsActivity
-import com.ziqiphyzhou.flashcard.shared.BOOKMARKS_JSON_DEFAULT
-import com.ziqiphyzhou.flashcard.shared.BOOKMARKS_SHAREDPREF_KEY
 import com.ziqiphyzhou.flashcard.shared.DEFAULT_BODY_SIZE
 import com.ziqiphyzhou.flashcard.shared.DEFAULT_TITLE_SIZE
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import java.util.Locale
 
 @AndroidEntryPoint // added before any activity/fragment for dependency injection
@@ -55,9 +38,9 @@ class MainActivity : AppCompatActivity()
     private lateinit var textToSpeech: TextToSpeech
     private var voiceMode = false // redundant
     private var mediaButtonState = true // a cursor pointing to card behavior buttons in audio mode
-    private lateinit var viewState : CardViewState
-    private lateinit var titleVoice: Locale
-    private lateinit var bodyVoice: Locale
+    private var viewState: CardViewState = CardViewState.Freeze
+    private var titleVoice: Locale = Locale.getDefault()
+    private var bodyVoice: Locale = Locale.getDefault()
     private lateinit var windowInsetsController: WindowInsetsControllerCompat
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -195,42 +178,40 @@ class MainActivity : AppCompatActivity()
             setToDisplayOnly(displayText)
         }
 
-        CoroutineScope(Dispatchers.Main).launch {
-            when (viewState) {
-                is CardViewState.ShowTitleOnly -> {
-                    binding.tvTitle.setTextSize(TypedValue.COMPLEX_UNIT_SP, viewState.titleSize.toFloat())
-                    binding.tvBody.setTextSize(TypedValue.COMPLEX_UNIT_SP, viewState.bodySize.toFloat())
-                    setToDisplayOnly(viewState.title)
-                    cardBodyText = viewState.body
+        when (viewState) {
+            is CardViewState.ShowTitleOnly -> {
+                binding.tvTitle.setTextSize(TypedValue.COMPLEX_UNIT_SP, viewState.titleSize.toFloat())
+                binding.tvBody.setTextSize(TypedValue.COMPLEX_UNIT_SP, viewState.bodySize.toFloat())
+                setToDisplayOnly(viewState.title)
+                cardBodyText = viewState.body
 
-                    binding.btnForgot.text = resources.getString(R.string.btn_hesitate)
-                    if (!voiceMode) setButtonEnabled(true)
-                    else {
-                        mediaButtonState = true
-                        textToSpeech.setLanguage(titleVoice)
-                        textToSpeech.speak(
-                            binding.tvTitle.text,
-                            TextToSpeech.QUEUE_FLUSH,
-                            null,
-                            null
-                        )
-                    }
+                binding.btnForgot.text = resources.getString(R.string.btn_hesitate)
+                if (!voiceMode) setButtonEnabled(true)
+                else {
+                    mediaButtonState = true
+                    textToSpeech.setLanguage(titleVoice)
+                    textToSpeech.speak(
+                        binding.tvTitle.text,
+                        TextToSpeech.QUEUE_FLUSH,
+                        null,
+                        null
+                    )
                 }
+            }
 
-                CardViewState.Freeze -> {
-                    setTextBlur(BlurMaskFilter(8f, BlurMaskFilter.Blur.NORMAL))
-                    setButtonEnabled(false)
-                }
+            CardViewState.Freeze -> {
+                setTextBlur(BlurMaskFilter(8f, BlurMaskFilter.Blur.NORMAL))
+                setButtonEnabled(false)
+            }
 
-                CardViewState.Init -> {
-                    setToDisplayOnlyWithDefaultFontSizes("'${viewModel.getCollName()}'")
-                }
-                CardViewState.CollectionEmpty -> {
-                    setToDisplayOnlyWithDefaultFontSizes("'${viewModel.getCollName()}' is empty")
-                }
-                CardViewState.CollectionMissing -> {
-                    setToDisplayOnlyWithDefaultFontSizes("No set selected")
-                }
+            CardViewState.Init -> {
+                setToDisplayOnlyWithDefaultFontSizes("'${viewModel.getCollName()}'")
+            }
+            CardViewState.CollectionEmpty -> {
+                setToDisplayOnlyWithDefaultFontSizes("'${viewModel.getCollName()}' is empty")
+            }
+            CardViewState.CollectionMissing -> {
+                setToDisplayOnlyWithDefaultFontSizes("No set selected")
             }
         }
     }
@@ -287,6 +268,14 @@ class MainActivity : AppCompatActivity()
         } catch (e: Exception) {
             Locale.getDefault()
         }
+    }
+
+    override fun onDestroy() {
+        if (::textToSpeech.isInitialized) {
+            textToSpeech.stop()
+            textToSpeech.shutdown()
+        }
+        super.onDestroy()
     }
 
 }

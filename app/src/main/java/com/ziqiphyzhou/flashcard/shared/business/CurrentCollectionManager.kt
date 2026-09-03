@@ -4,19 +4,24 @@ import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import com.ziqiphyzhou.flashcard.AppApplication
 import com.ziqiphyzhou.flashcard.card_database.data.repository.CardRepository
-import com.ziqiphyzhou.flashcard.card_main.business.CardDealer
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class CurrentCollectionManager @Inject constructor(private val repo: CardRepository) {
 
+    private val selectionMutex = Mutex()
+
     private val sharedPrefKey = "coll"
     private val sharedPref =
         PreferenceManager.getDefaultSharedPreferences(AppApplication.INSTANCE.applicationContext)
+    @Volatile
     private var coll: String? = getSharedPrefColl()
 
     private val sharedPrefKeyPrevious = "coll_previous"
+    @Volatile
     private var collPrevious: String? = getSharedPrefColl(true)
 
     // have to be careful
@@ -28,15 +33,17 @@ class CurrentCollectionManager @Inject constructor(private val repo: CardReposit
 
     suspend fun set(setToColl: String?): Boolean {
         return withContext(Dispatchers.IO) {
-            if (setToColl != coll) {
-                collPrevious = coll
-                if (!repo.isCollectionExist(collPrevious)) collPrevious = null
-                coll = setToColl
-                if (!repo.isCollectionExist(coll)) coll = null
+            selectionMutex.withLock {
+                if (setToColl != coll) {
+                    collPrevious = coll
+                    if (!repo.isCollectionExist(collPrevious)) collPrevious = null
+                    coll = setToColl
+                    if (!repo.isCollectionExist(coll)) coll = null
+                }
+                sharedPref.edit { putString(sharedPrefKeyPrevious, collPrevious ?: "") }
+                sharedPref.edit { putString(sharedPrefKey, coll ?: "") }
+                true
             }
-            sharedPref.edit { putString(sharedPrefKeyPrevious, collPrevious ?: "") }
-            sharedPref.edit { putString(sharedPrefKey, coll ?: "") }
-            true
         }
     }
 

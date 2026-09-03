@@ -5,6 +5,8 @@ import com.ziqiphyzhou.flashcard.shared.business.CollectionManager
 import com.ziqiphyzhou.flashcard.shared.business.CurrentCollectionManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
@@ -14,9 +16,11 @@ class SettingsViewModel @Inject constructor(
     private val collManager: CollectionManager,
 ) : ViewModel() {
 
+    private val mutationMutex = Mutex()
+
     suspend fun deleteCurrentCollection(): Boolean {
         return withContext(Dispatchers.IO) {
-            collManager.deleteCollection()
+            mutationMutex.withLock { collManager.deleteCollection() }
         }
     }
 
@@ -25,17 +29,17 @@ class SettingsViewModel @Inject constructor(
 
     suspend fun addCollection(coll: String): Boolean {
         return withContext(Dispatchers.IO) {
-            collManager.addCollection(coll)
+            mutationMutex.withLock { collManager.addCollection(coll) }
         }
     }
 
     suspend fun switchCollection(coll: String?): Boolean {
-        return curColl.set(coll)
+        return mutationMutex.withLock { curColl.set(coll) }
     }
 
     suspend fun setVoice(voice: String, titleOrBody: String): Boolean {
         return withContext(Dispatchers.IO) {
-            curColl.setVoiceToCurColl(voice, titleOrBody)
+            mutationMutex.withLock { curColl.setVoiceToCurColl(voice, titleOrBody) }
         }
     }
 

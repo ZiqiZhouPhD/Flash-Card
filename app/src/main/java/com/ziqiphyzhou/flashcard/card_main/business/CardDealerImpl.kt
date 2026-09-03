@@ -107,7 +107,7 @@ class CardDealerImpl @Inject constructor(
         } ?: throw CardDealer.Companion.CollectionMissingException()
     }
 
-    override suspend fun getCollName(): String? {
+    override fun getCollName(): String? {
         return curColl.get()
     }
 

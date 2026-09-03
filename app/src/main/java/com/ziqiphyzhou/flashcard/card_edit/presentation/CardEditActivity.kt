@@ -1,6 +1,5 @@
 package com.ziqiphyzhou.flashcard.card_edit.presentation
 
-import android.content.Context
 import android.os.Bundle
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
@@ -11,15 +10,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.google.android.material.snackbar.Snackbar
-import com.ziqiphyzhou.flashcard.R
-import com.ziqiphyzhou.flashcard.card_add.presentation.AddViewModel
-import com.ziqiphyzhou.flashcard.databinding.ActivityAddBinding
 import com.ziqiphyzhou.flashcard.databinding.ActivityCardEditBinding
-import com.ziqiphyzhou.flashcard.databinding.DialogTextEditBinding
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class CardEditActivity : AppCompatActivity() {
@@ -98,12 +90,10 @@ class CardEditActivity : AppCompatActivity() {
         val bodyText = binding.editTextEditBody.text.toString()
 
         val cardId = intent.getStringExtra("id")
-        CoroutineScope(Dispatchers.Main).launch {
-            if (cardId != null) {
-                viewModel.edit(cardId, titleText, bodyText)
-            } else {
-                Snackbar.make(binding.root, "Edit failed. ", Snackbar.LENGTH_LONG).show()
-            }
+        if (cardId != null) {
+            viewModel.edit(cardId, titleText, bodyText)
+        } else {
+            Snackbar.make(binding.root, "Edit failed. ", Snackbar.LENGTH_LONG).show()
         }
     }
 }

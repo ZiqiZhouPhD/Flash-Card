@@ -304,7 +304,9 @@ class CardRepositoryDatabase @Inject constructor(private val database: CardDatab
     }
 
     override suspend fun getAllCollectionNames(): List<String> {
-        return cardDao.getAllZeroCards().map { it.id.substring(1) }
+        return withContext(Dispatchers.IO) {
+            cardDao.getAllZeroCards().map { it.id.substring(1) }
+        }
     }
 
     private fun Card.toEntity(coll: String) = CardEntity(

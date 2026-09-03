@@ -12,8 +12,8 @@ import javax.inject.Inject
 class CardEditor @Inject constructor(
     private val repo: CardRepository,
     private val curColl: CurrentCollectionManager
-) {
-    suspend fun getAllBeginWith(substring: String): List<Card> {
+) : CardEditorActions {
+    override suspend fun getAllBeginWith(substring: String): List<Card> {
         if (substring == "") return emptyList() // empty title not allowed
         return withContext(Dispatchers.IO) {
             curColl.get()?.let { coll ->
@@ -22,7 +22,7 @@ class CardEditor @Inject constructor(
         }
     }
 
-    suspend fun checkTitleExists(title: String): Boolean {
+    override suspend fun checkTitleExists(title: String): Boolean {
         return withContext(Dispatchers.IO) {
             curColl.get()?.let { coll ->
                 repo.getAllBeginWith(title, coll, exact = true).isNotEmpty()
@@ -30,26 +30,26 @@ class CardEditor @Inject constructor(
         }
     }
 
-    suspend fun addCard(title: String, body: String, afterThisId: String): String? {
+    override suspend fun addCard(title: String, body: String, afterThisId: String): String? {
         return if (!repo.isCollectionExist(curColl.get())) null
         else { curColl.get()?.let {repo.addCard(title, body, afterThisId, it)} }
     }
 
-    suspend fun deleteCard(id: String): Boolean {
+    override suspend fun deleteCard(id: String): Boolean {
         return curColl.get()?.let {
             repo.deleteCard(id, it)
             true
         } ?: false
     }
 
-    suspend fun editCard(id: String, title: String, body: String): Boolean {
+    override suspend fun editCard(id: String, title: String, body: String): Boolean {
         return curColl.get()?.let {
             repo.editCard(id, it, title, body)
             true
         } ?: false
     }
 
-    suspend fun getAddAfterThisId(): String {
+    override suspend fun getAddAfterThisId(): String {
         return curColl.get()?.let {
             repo.getLastIdWithLevelNoMoreThan(ADD_NEW_CARD_AFTER_LEVEL, it)
         } ?: ""

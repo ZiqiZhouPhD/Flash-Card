@@ -2,7 +2,7 @@ package com.ziqiphyzhou.flashcard.card_delete.presentation
 
 import android.content.Intent
 import android.os.Bundle
-import android.speech.tts.TextToSpeech
+import android.view.inputmethod.InputMethodManager
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -12,12 +12,8 @@ import androidx.core.widget.addTextChangedListener
 import com.google.android.material.snackbar.Snackbar
 import com.ziqiphyzhou.flashcard.databinding.ActivityDeleteBinding
 import dagger.hilt.android.AndroidEntryPoint
-import android.view.inputmethod.InputMethodManager
 import com.ziqiphyzhou.flashcard.card_add.presentation.AddActivity
 import com.ziqiphyzhou.flashcard.card_edit.presentation.CardEditActivity
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class DeleteActivity : AppCompatActivity() {

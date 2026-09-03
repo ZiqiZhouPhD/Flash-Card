@@ -4,18 +4,16 @@ import android.content.Context
 import android.os.Bundle
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
-import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.snackbar.Snackbar
 import com.ziqiphyzhou.flashcard.databinding.ActivityAddBinding
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 
@@ -86,7 +84,7 @@ class AddActivity : AppCompatActivity() {
         val titleText = binding.editTextAddTitle.text.toString()
         val bodyText = binding.editTextAddBody.text.toString()
 
-        CoroutineScope(Dispatchers.Main).launch {
+        lifecycleScope.launch {
             if (viewModel.checkTitleExists(titleText)) {
                 AlertDialog.Builder(this@AddActivity)
                     .setTitle("Card(s) with the same title exists!")

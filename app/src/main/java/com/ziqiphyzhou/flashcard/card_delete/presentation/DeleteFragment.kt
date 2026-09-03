@@ -1,29 +1,16 @@
 package com.ziqiphyzhou.flashcard.card_delete.presentation
 
-import android.content.Intent
 import android.os.Bundle
-import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.inputmethod.InputMethodManager
-import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.android.material.snackbar.Snackbar
-import com.ziqiphyzhou.flashcard.R
-import com.ziqiphyzhou.flashcard.card_add.presentation.AddActivity
 import com.ziqiphyzhou.flashcard.databinding.FragmentDeleteBinding
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class DeleteFragment : Fragment() {
@@ -72,9 +59,7 @@ class DeleteFragment : Fragment() {
             .setTitle("Warning!")
             .setMessage("Do you want to delete \"${viewState.title}\" from the database?")
             .setPositiveButton("Delete") { dialog, _ ->
-                CoroutineScope(Dispatchers.IO).launch {
-                    viewModel.deleteIconClicked(viewState.id, viewState.title)
-                }
+                viewModel.deleteIconClicked(viewState.id, viewState.title)
                 dialog.dismiss()
                 view?.findFocus()?.clearFocus()
             }
