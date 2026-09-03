@@ -174,7 +174,7 @@ Activities/fragments with injected ViewModels are `@AndroidEntryPoint`; ViewMode
 
 ### Concurrency
 
-Room and business work generally moves to `Dispatchers.IO`; ViewModels use `viewModelScope`. UI updates must happen on the main thread. Some current activities create standalone coroutine scopes, and dealer setup launches bookmark initialization asynchronously. These are implementation risks rather than intended architectural patterns; new work should use structured, lifecycle-aware concurrency and await initialization that later actions depend upon.
+Room and business work generally moves to `Dispatchers.IO`; ViewModels use `viewModelScope`. UI updates must happen on the main thread. Dealer setup now awaits bookmark initialization before exposing the initialized view state. Some activities still create standalone coroutine scopes; new work should use structured, lifecycle-aware concurrency and await initialization that later actions depend upon.
 
 ## Queue and scheduling design
 
@@ -244,9 +244,9 @@ See [DATA_FORMAT.md](DATA_FORMAT.md) for field-level definitions and examples.
 
 The business layer distinguishes a missing set from an empty set with `CardDealer.CollectionMissingException` and `CollectionEmptyException`. The study ViewModel explicitly renders both cases during initialization/loading.
 
-Import catches malformed JSON and returns failure. Repository import keeps a snapshot of the destination set, upserts payload rows, validates that they form a single cycle containing a zero card, and attempts restoration when validation fails. Other repository calls assume the requested IDs exist; Room lookup failures may propagate.
+Import catches malformed JSON and returns failure. Repository import transactionally replaces only the destination set, validates that the replacement forms a single cycle containing a zero card, and commits only after validation succeeds. An exception or invalid cycle rolls the whole replacement back automatically. Other repository calls assume the requested IDs exist; Room lookup failures may propagate.
 
-The linked-list operations affect multiple rows but are not currently annotated as Room transactions. Atomic transactions are the intended direction for reliability.
+Add, delete, empty, import, and review/bury mutations use Room transactions so their linked rows change together or not at all. A review combines the top card's level/state write and queue move in one repository operation; `CardDealerImpl` publishes its calculated in-memory bookmarks only after that operation succeeds.
 
 ## Quality attributes and design constraints
 
@@ -268,15 +268,6 @@ TTS and hardware media controls enable an audio-oriented workflow. However, many
 
 ## Known limitations and planned direction
 
-The code and repository TODOs identify these significant gaps:
+The prioritized backlog is maintained in [`TODO.md`](../TODO.md). The most important remaining architectural work is versioning collection metadata without losing legacy data, defining backup/restore rules, and replacing remaining ad-hoc coroutine scopes. Product work includes Storage Access Framework import/export, stronger boundary validation, collection behavior controls, and accessibility cleanup.
 
-- Import/export should move from the clipboard to Android's Storage Access Framework.
-- Automated domain and repository coverage needs to replace template tests.
-- Multi-row database mutations need transaction boundaries.
-- Dealer setup should await bookmark initialization to avoid a race before the first rating.
-- Zero-card metadata needs a versioned, structured representation.
-- Collection-level controls for bijective mode and font sizes are not exposed in Settings.
-- Edit/save navigation, bookmark editing, themes, and behavior help need refinement.
-- The vocabulary conversion script documents an append mode that its current CLI does not implement.
-
-These items describe current debt, not permission to change compatibility silently. Scheduling or storage redesigns should include migrations, tests, and updates to both design documents.
+These items describe current debt, not permission to change compatibility silently. Scheduling or storage redesigns should include migrations, focused tests, and updates to both design documents. Completed work belongs in `CHANGELOG.md`, not in the active backlog.

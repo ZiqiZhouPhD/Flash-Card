@@ -7,9 +7,10 @@ All notable changes to Flash Card are documented here. The format follows Keep a
 ### Added
 
 - Repository-wide contributor guidance in `AGENTS.md`.
+- A root `TODO.md` as the authoritative, prioritized project backlog.
 - Architecture, data-format, and testing documentation under `docs/`.
 - Focused JVM coverage for card-review scheduling behavior.
-- In-memory Room integration coverage for circular-list integrity, collection isolation, and export/import round trips.
+- In-memory Room integration coverage for circular-list integrity, collection isolation, export/import round trips, and transaction rollback under injected SQLite failures.
 - A UI launch smoke test for the main activity.
 - A reusable PowerShell device-smoke runner that updates the app in place, verifies that installation data was preserved, runs Android tests, checks the crash buffer, and removes only its temporary test package.
 - Versioned Room schema output for future migration validation.
@@ -24,12 +25,16 @@ All notable changes to Flash Card are documented here. The format follows Keep a
 - Updated the Foojay resolver and standardized the Gradle daemon on JetBrains JDK 21.
 - Simplified application dependencies by removing unused Cronet and Compose artifacts, duplicate declarations, and obsolete annotation processors.
 - Replaced asynchronous bookmark initialization with an awaited setup step before review actions can proceed.
+- Made add, delete, empty, import, and review/bury repository mutations atomic with Room transactions.
+- Replaced import's detached deletion coroutine and manual snapshot restoration with transactional collection replacement and automatic rollback.
 - Reorganized tests by production package and scope using `Test`, `IntegrationTest`, and `SmokeTest` naming.
 - Expanded the README with product behavior, setup, documentation, testing, and roadmap information.
 
 ### Fixed
 
 - Prevented one-card collections from calculating a negative insertion-bookmark index during reversed-prompt scheduling.
+- Fixed emptying a populated collection so it reliably leaves one self-linked zero card.
+- Prevented failed review writes from advancing the dealer's in-memory bookmarks.
 - Removed unused Compose imports left in XML/View Binding activities.
 
 ### Verification

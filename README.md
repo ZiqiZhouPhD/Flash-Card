@@ -19,6 +19,7 @@ Flash Card is an offline Android study app with multiple named card sets, level-
 - [Data format](docs/DATA_FORMAT.md) — circular-list invariants, zero-card metadata, Room representation, and JSON interchange
 - [Testing guide](docs/TESTING.md) — test layers, package layout, commands, and safe device checks
 - [Agent and contributor guide](AGENTS.md) — repository map, build checks, architectural rules, and change discipline
+- [Project backlog](TODO.md) — authoritative priorities and completion criteria
 - [Changelog](CHANGELOG.md) — notable unreleased changes and verification status
 
 ## Development setup
@@ -57,17 +58,6 @@ python .\raw-vocab-to-meta-tool.py .\vocab.txt --output .\vocab.json
 
 The generated JSON follows the app's clipboard import format. Copy the JSON text, then open **Settings → Import / Export → Import**. See [the data-format reference](docs/DATA_FORMAT.md) before generating or editing payloads outside the app.
 
-## Roadmap and known debt
+## Roadmap
 
-High-priority work visible in the current implementation includes:
-
-- Move import/export from clipboard text to Android's Storage Access Framework.
-- Add real tests for scheduling and repository link integrity.
-- Make multi-row database mutations transactional.
-- Await dealer bookmark initialization before accepting ratings.
-- Version and structure the zero-card metadata format.
-- Add Settings controls for bijective/one-way behavior and per-side font sizes.
-- Validate collection names and improve malformed-data handling.
-- Split the Settings hub into more focused screens.
-
-Lower-priority ideas include theme refinement, bookmark editing, behavior help, TTS-on-tap, and a utility to reset a set's scheduling state.
+See [TODO.md](TODO.md) for the prioritized project backlog. It is the authoritative location for open work; completed changes are recorded in [CHANGELOG.md](CHANGELOG.md).

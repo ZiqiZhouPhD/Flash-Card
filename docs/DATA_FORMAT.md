@@ -167,16 +167,15 @@ Important properties:
 `ImportExportViewModel` parses the envelope, deserializes the card list, and calls `importCollection(cards, collectionName)`. The repository:
 
 1. Rejects an empty list or one without an empty logical ID.
-2. Snapshots existing rows in the destination collection.
-3. Removes destination rows not present in the incoming logical-ID set.
-4. Adds the destination suffix to IDs and links, converts boolean state to 1/0, and upserts rows.
-5. Validates that the resulting collection is one intact circular structure.
-6. Attempts to restore the snapshot if an exception or structural failure occurs.
-7. Changes the current collection only after a successful result.
+2. Adds the destination suffix to IDs and links and converts boolean state to 1/0.
+3. Opens a Room transaction and deletes the existing destination rows.
+4. Inserts the replacement rows and validates that they form one intact circular structure.
+5. Commits only on success; an exception or structural failure rolls the transaction back to the previous destination contents.
+6. Changes the current collection only after a successful result.
 
 Import targets the collection named in the payload. It does not wipe unrelated sets. Importing a name that already exists replaces that set; importing a new name creates it through the included zero card.
 
-Current implementation note: deletion of obsolete rows is launched in a child IO coroutine and the operation is not a Room transaction. Consumers should wait for the Boolean result, but maintainers should not assume the implementation is crash-atomic until this is refactored into a transaction.
+Add, delete, empty, and review/bury operations also execute their multi-row link changes in Room transactions. Review writes the top card's scheduling fields and moves it in the cycle atomically.
 
 ## Vocabulary converter
 

@@ -29,7 +29,7 @@ scripts/
 └── device-smoke-test.ps1
 ```
 
-`CardReviewPolicyTest` is a fast JVM test. `CardRepositoryDatabaseIntegrationTest` creates a fresh in-memory database for every test and never opens the installed application's database. `MainActivitySmokeTest` verifies that the real entry activity can launch and render its primary controls without changing study data.
+`CardReviewPolicyTest` is a fast JVM test. `CardRepositoryDatabaseIntegrationTest` creates a fresh in-memory database for every test, injects SQLite trigger failures to verify transaction rollback, and never opens the installed application's database. `MainActivitySmokeTest` verifies that the real entry activity can launch and render its primary controls without changing study data.
 
 ## Naming and isolation
 

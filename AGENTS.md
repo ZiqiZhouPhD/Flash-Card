@@ -21,6 +21,7 @@ The authoritative design references are:
 - `docs/APP_DESIGN.md` for product behavior, architecture, and scheduling
 - `docs/DATA_FORMAT.md` for Room invariants, zero-card metadata, and JSON interchange
 - `docs/TESTING.md` for test placement, naming, isolation, and device checks
+- `TODO.md` for backlog priority, dependencies, and completion criteria
 
 ## Repository map
 
@@ -105,7 +106,7 @@ The database is not an unordered collection of independent rows. Every set is ex
 
 Read `docs/DATA_FORMAT.md` before changing DAO queries, identifiers, import/export, metadata, add/delete/bury operations, or collection management.
 
-Repository mutations must leave the cycle intact even on failure. Multi-row mutations should be atomic; when improving them, prefer Room transactions instead of asynchronous cleanup or rollback work. Never bypass `CardRepository` from feature code to manipulate links directly.
+Repository mutations must leave the cycle intact even on failure. Add, delete, empty, import, and review/bury multi-row mutations use Room transactions; preserve that atomic boundary and never replace it with asynchronous cleanup or manual rollback work. Never bypass `CardRepository` from feature code to manipulate links directly.
 
 ## Scheduling rules to preserve
 
@@ -170,14 +171,4 @@ Before handing off:
 
 ## Current known debt
 
-Do not mistake these legacy conditions for recommended patterns:
-
-- Automated tests are placeholders.
-- Some activities create ad-hoc coroutine scopes and touch UI from IO-launched work.
-- Several multi-row Room mutations are not declared transactions.
-- Dealer bookmark initialization launches asynchronous work instead of awaiting it.
-- The zero-card metadata is unversioned and comma-delimited.
-- Import/export uses the clipboard rather than Android's Storage Access Framework.
-- Several strings are hard-coded, and some unused imports/comments remain.
-
-It is appropriate to improve one of these when it is in scope, but preserve user-visible behavior and the data format unless the requested change explicitly includes a migration.
+`TODO.md` is the authoritative backlog. Do not duplicate or silently reprioritize its items in code comments or other documents. It is appropriate to improve one item when it is in scope, but preserve user-visible behavior and the data format unless the requested change explicitly includes a migration.
