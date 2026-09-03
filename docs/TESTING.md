@@ -16,8 +16,13 @@ Avoid replacing focused tests with a large end-to-end suite. TTS voice quality, 
 
 ```text
 app/src/test/java/com/ziqiphyzhou/flashcard/
-└── card_main/business/
-    └── CardReviewPolicyTest.kt
+├── card_delete/presentation/
+│   └── DeleteViewModelTest.kt
+├── card_main/
+│   ├── business/CardReviewPolicyTest.kt
+│   └── presentation/CardViewModelTest.kt
+└── shared/testing/
+    └── MainDispatcherRule.kt
 
 app/src/androidTest/java/com/ziqiphyzhou/flashcard/
 ├── card_database/data/repository/database/
@@ -29,7 +34,7 @@ scripts/
 └── device-smoke-test.ps1
 ```
 
-`CardReviewPolicyTest` is a fast JVM test. `CardRepositoryDatabaseIntegrationTest` creates a fresh in-memory database for every test, injects SQLite trigger failures to verify transaction rollback, and never opens the installed application's database. `MainActivitySmokeTest` verifies that the real entry activity can launch and render its primary controls without changing study data.
+The JVM suite covers pure review policy plus ViewModel coroutine ordering with a test dispatcher and small business fakes. Its concurrency cases verify that duplicate state-changing input is suppressed and stale replaceable searches are cancelled. `CardRepositoryDatabaseIntegrationTest` creates a fresh in-memory database for every test, injects SQLite trigger failures to verify transaction rollback, and never opens the installed application's database. `MainActivitySmokeTest` verifies that the real entry activity can launch and render its primary controls without changing study data.
 
 ## Naming and isolation
 
@@ -38,6 +43,7 @@ scripts/
 - Name methods as behavior plus expected outcome, such as `collectionOperationsRemainIsolated`.
 - Give each test its own state. Do not depend on test order, sleeps, the network, or another test's cleanup.
 - Prefer fakes or pure functions for business rules. Use Android instrumentation only when the Android framework is part of the contract.
+- Coroutine tests use `MainDispatcherRule` and virtual time; do not add timing sleeps.
 - Never point repository integration tests at the user's on-device database.
 
 ## Local commands

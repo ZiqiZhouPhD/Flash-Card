@@ -92,6 +92,10 @@ An app-level empty collection still contains one database row:
 
 After persistence, both `id` and `previous` become `@<collection>`. `getTop()` therefore returns the zero card, which the dealer translates to `CollectionEmpty`.
 
+## Collection selection preferences
+
+The current and previous collection names are stored in default `SharedPreferences` under `coll` and `coll_previous`. Empty strings represent no selection. `CurrentCollectionManager` validates non-null names against their zero card before publishing them and serializes selection changes so the two in-memory values and preference entries cannot be interleaved by concurrent requests.
+
 ## Zero-card metadata
 
 The zero card is not shown or edited as a normal flash card. Its `body` is split on commas into positional fields:

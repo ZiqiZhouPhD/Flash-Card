@@ -32,9 +32,6 @@ Last reviewed: 2026-09-03
 - [ ] **VAL-001 — Validate names and imported content at boundaries.**
   Define allowed collection names, reject reserved delimiters/empty values, and return actionable errors for malformed or structurally invalid payloads. Done when invalid input cannot create ambiguous IDs or partially overwrite a collection.
 
-- [ ] **CONC-001 — Replace ad-hoc coroutine scopes with lifecycle-aware work.**
-  Move activity/fragment jobs into ViewModels or lifecycle scopes, keep UI work on the main thread, and make repository work structured and cancellable. Done when leaving a screen cannot orphan database/UI work and focused lifecycle tests cover the affected flows.
-
 - [ ] **TEST-001 — Expand high-risk behavior coverage.**
   Add focused cases for invalid-import rollback, duplicate titles, empty/one/many-card repositories, daily rollover with an injected clock, and ViewModel error states. Keep the suite layered according to `docs/TESTING.md`.
 
@@ -63,6 +60,9 @@ Last reviewed: 2026-09-03
 
 - [ ] **UI-001 — Refine themes and visual polish.**
   Consolidate light/dark styling and verify contrast, system bars, disabled states, and Material component consistency on API 34–36.
+
+- [ ] **UI-002 — Make card font sizes adapt to text length.**
+  Scale the title-side and body-side text independently according to their character counts while preserving readable minimum and maximum sizes. Define how adaptive sizing interacts with the per-collection font-size controls in `SET-001`, and verify short, long, and unusually formatted text without clipping or disruptive size changes.
 
 - [ ] **TOOL-001 — Resolve the vocabulary tool's documented append mode.**
   Either implement and test `--meta` append behavior or remove it from the script documentation so the CLI and examples agree.

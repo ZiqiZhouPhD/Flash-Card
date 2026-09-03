@@ -68,7 +68,7 @@ Instrumented tests require an API 34+ emulator or device:
 
 The Gradle JVM criteria select JetBrains JDK 21 while application sources target Java 17 bytecode. Android Studio's bundled runtime is the simplest compatible setup. Install Android SDK 36 and Build Tools 36.0.0, and do not edit or commit `local.properties`; it is machine-specific.
 
-Tests mirror their production packages. JVM classes use the `*Test` suffix, Android component tests use `*IntegrationTest`, and critical UI entry points use `*SmokeTest`. The automated suite covers card-review scheduling, core Room repository invariants, export/import round trips, and application launch. For behavior changes, add focused tests around the changed contract. Prioritize repository link integrity and `CardDealerImpl` level/state transitions. For UI-only changes, build the app and manually exercise the affected screen in addition to the narrowest relevant automated task.
+Tests mirror their production packages. JVM classes use the `*Test` suffix, Android component tests use `*IntegrationTest`, and critical UI entry points use `*SmokeTest`. The automated suite covers card-review scheduling, ViewModel coroutine coordination, core Room repository invariants, export/import round trips, and application launch. For behavior changes, add focused tests around the changed contract. Prioritize repository link integrity, `CardDealerImpl` level/state transitions, and cancellation or duplicate-input behavior in stateful ViewModels. For UI-only changes, build the app and manually exercise the affected screen in addition to the narrowest relevant automated task.
 
 For a connected-device check that preserves the installed application's data, run `scripts/device-smoke-test.ps1`. Do not replace it with `adb uninstall`, `pm clear`, or another workflow that resets the target package.
 
@@ -81,13 +81,13 @@ Activity / Fragment -> ViewModel -> business class -> CardRepository -> CardDao
 ```
 
 - Views render state, collect input, navigate, and show transient messages. Do not put scheduling or database mutation rules in an activity or fragment.
-- ViewModels own presentation state and launch lifecycle-bound work with `viewModelScope`.
+- ViewModels own presentation state and launch lifecycle-bound work with `viewModelScope`; activities use `lifecycleScope` only for short UI-bound suspend calls.
 - Business classes express app behavior without depending on Android views.
 - `CardRepository` is the business-facing persistence contract. Keep Room entities and DAO details behind its implementation.
 - `ImportExportViewModel` currently talks directly to `CardRepository`; preserve its data validation and current-set update semantics if refactoring it.
 - Hilt bindings belong in `dependency_injection/AppModule.kt`. `CurrentCollectionManager` must remain a singleton unless its process-wide semantics are deliberately redesigned.
 
-Keep blocking Room and file work off the main thread. Update Android views and show `Snackbar`s on the main thread. Prefer structured, lifecycle-aware coroutines over standalone `CoroutineScope(...)` instances when touching existing code.
+Keep blocking Room and file work off the main thread. Update Android views and show `Snackbar`s on the main thread. Do not create standalone `CoroutineScope(...)` instances: every job must belong to a ViewModel, lifecycle owner, or an existing structured suspend call. Serialize stateful operations that must not overlap, cancel stale replaceable work, and never swallow `CancellationException`.
 
 ## Non-negotiable data invariants
 

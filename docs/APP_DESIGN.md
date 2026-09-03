@@ -145,7 +145,7 @@ SharedPreferences ─────────> current/previous set, bookmark po
 Android TextToSpeech ──────> spoken prompt and answer
 ```
 
-The app is a single Gradle module and organizes source by feature. It resembles MVVM with a repository layer, though boundaries are pragmatic rather than strict: for example, import/export accesses the repository directly and activities still perform some coroutine orchestration.
+The app is a single Gradle module and organizes source by feature. It resembles MVVM with a repository layer, though boundaries are pragmatic rather than strict: for example, import/export accesses the repository directly, while its activity owns clipboard and confirmation UI.
 
 ### Presentation state
 
@@ -168,13 +168,17 @@ The edit/delete list has `Loading` and `Content` states. Snackbar messages, coun
 - `CardDatabase` and `CardDao`
 - `CardRepositoryDatabase` bound as `CardRepository`
 - `CardDealerImpl` bound as `CardDealer`
+- `CardEditor` bound as `CardEditorActions`
+- `DailyCounter` bound as `ReviewCounter`
 - A singleton `CurrentCollectionManager`
 
 Activities/fragments with injected ViewModels are `@AndroidEntryPoint`; ViewModels are `@HiltViewModel` and receive collaborators via constructor injection.
 
 ### Concurrency
 
-Room and business work generally moves to `Dispatchers.IO`; ViewModels use `viewModelScope`. UI updates must happen on the main thread. Dealer setup now awaits bookmark initialization before exposing the initialized view state. Some activities still create standalone coroutine scopes; new work should use structured, lifecycle-aware concurrency and await initialization that later actions depend upon.
+Room and business APIs are main-safe and move blocking database work to `Dispatchers.IO`. ViewModels use `viewModelScope`; short UI-bound suspend calls use the owning activity's `lifecycleScope`. There are no ownerless presentation scopes, so destroying the owner cancels its work, and cancellation is rethrown rather than converted into an ordinary import failure. LiveData observers and lifecycle scopes update Android views, clipboard, and `Snackbar`s on the main thread.
+
+Stateful work is explicitly coordinated. The study ViewModel serializes initialization, loading, and review/reload operations and ignores a second rating while the first is frozen. Delete search cancels its preceding query and serializes searches with deletion. Settings mutations and current/previous collection changes use mutexes so concurrent requests cannot interleave their state writes. Dealer setup awaits bookmark initialization before exposing the initialized state. Activities also shut down their Text-to-Speech instances on destruction.
 
 ## Queue and scheduling design
 
@@ -268,6 +272,6 @@ TTS and hardware media controls enable an audio-oriented workflow. However, many
 
 ## Known limitations and planned direction
 
-The prioritized backlog is maintained in [`TODO.md`](../TODO.md). The most important remaining architectural work is versioning collection metadata without losing legacy data, defining backup/restore rules, and replacing remaining ad-hoc coroutine scopes. Product work includes Storage Access Framework import/export, stronger boundary validation, collection behavior controls, and accessibility cleanup.
+The prioritized backlog is maintained in [`TODO.md`](../TODO.md). The most important remaining architectural work is versioning collection metadata without losing legacy data and defining backup/restore rules. Product work includes Storage Access Framework import/export, stronger boundary validation, collection behavior controls, and accessibility cleanup.
 
 These items describe current debt, not permission to change compatibility silently. Scheduling or storage redesigns should include migrations, focused tests, and updates to both design documents. Completed work belongs in `CHANGELOG.md`, not in the active backlog.
